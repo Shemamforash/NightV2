@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Night</title>
+    <link type="text/css" rel="stylesheet" href="style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="Helper.js"></script>
+    <script src="Night.js"></script>
+    <script src="Location.js"></script>
+    <script src="Survivor.js"></script>
+    <script src="UIController.js"></script>
+</head>
+<body>
+<div id="top">
+    <div id="fuel_label" class="resource_info">Fuel: 0</div>
+    <div id="water_label" class="resource_info">Water: 0</div>
+    <div id="food_label" class="resource_info">Food: 0</div>
+</div>
+<div id="middle-upper">
+    <div id="phrase_label">The sky is dark and the sands burn.</div>
+    <div id="event_log">
+        <div id="event_one" class="event_div"></div>
+        <div id="event_two" class="event_div"></div>
+        <div id="event_three" class="event_div"></div>
+        <div id="event_four" class="event_div"></div>
+    </div>
+    <div id="world_info_label">
+        <div id="location_label" class="world_info"></div>
+        <div id="group_size_label" class="world_info">1</div>
+        <div id="day_number_label" class="world_info">0</div>
+        <div id="weather_label" class="world_info">Searing</div>
+        <div id="temperature_label" class="world_info">40C</div>
+    </div>
+</div>
+<div id="middle-lower">
+    <div id="table_headers">
+        <div class="survivor_name">Name</div>
+        <div class="survivor_trait">Trait 1</div>
+        <div class="survivor_trait">Trait 2</div>
+        <div class="survivor_resource">Food req</div>
+        <div class="survivor_resource">Water req</div>
+        <div class="survivor_resource">Fuel req</div>
+        <div class="survivor_resource">Hunting</div>
+        <div class="survivor_resource">Aqua</div>
+        <div class="survivor_resource">Scavenging</div>
+        <div class="toggle_div">To save?</div>
+    </div>
+</div>
+<div id="bottom">
+    <button id="next_day_button" onclick="world.General.advance_day()">Next Day</button>
+</div>
+</body>
+</html>

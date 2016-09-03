@@ -1,0 +1,245 @@
+IMPLEMENTATION:
+    open page
+    pause game
+    wait for dom
+    check if save exists
+        yes -> load save
+        no -> use initial values
+            - create new day
+            - new character * 2
+
+    unpause game
+    run timer from 6AM to 7PM
+        - player choose actions
+            - character inactive
+            - returns at end of time
+            - chance for failure based on danger
+        - thirst and hunger increases
+            - water and food consumed
+            - chance for death
+        - chance for random survivor to turn up
+        - higher chance of losing survivor if out after 7
+        - vary temperature
+            - affects thirst, hunger, strength, skills
+    pause game
+    show end day screen
+        - player chooses to move or stay
+            stay -> create new day
+            move -> create new environment
+
+    create new day ->
+        - select appropriate weather
+        - calculate temperature range
+        - modify water and food quantities in environment
+        - advance danger
+
+    create new environment ->
+        - select random environment
+        - create random day
+        - move danger away
+        - kill survivors left behind
+
+    new character ->
+        - random gender
+        - generate name
+        - random backstory
+        - random age
+        - random weight
+        - calculate strength
+        - calculate skills
+        - calculate needs
+        - set preferred temperature, environment, weather
+        - random traits
+        - modify skills, needs
+
+
+
+DESIGN:
+        12 hour day (6am to 6pm), hour passes every (10?) seconds
+        actions take time to complete
+        things come at night to take resources or survivors
+        temperature based on time as well as location and weather
+        more traits (including professions e.g. engineers/chefs, and diseases?)
+        new resource for building
+        events e.g. animal attacks, fighting raiders, resource stockpile found
+        menus for start/pause/end game/location-select
+
+    finding resources:
+        finding resources takes time.
+        find skill affects how well the survivor uses that time to find resources.
+        higher skill results in more area searched.
+        skill does not affect how much resource the survivor can carry.
+        strength affects how much can be carried.
+        if a survivor is carrying max resources they will not return early.
+        if a survivor is out too long they may die (starve, dehydrate, attacked, lost)
+
+    resources:
+        the outpost has resources. these are what the survivors consume.
+        the world has resources scattered around. they must be found.
+        survivors can go out to find resources.
+        their skill affects how successful they are.
+        survivors must consume food and water to survive.
+        resources deplete over time, forcing the survivors to move to a new area.
+        priority affects which resources will be gathered.
+        gathering a certain resources sets high priority for it (gathering water wont bring food).
+        however the survivor might still find that resource and can eat/drink it if necessary.
+        if seeking water and food is found all will be eaten (and vica versa for seeking food)
+        if seeking water and water is found water will only be drunk if either carrying max water or dehydrated (same for food)
+        general resource gathering can also be carried out (bring what is found)
+
+    resource consumption:
+        water: water is consumed when survivors are thirsty. survivors must slake their thirst periodically.
+                dehydration is recorded in hours. survivors can survive varying amounts of time before dying.
+                if a survivor finds water in the wild they will drink it if they are dehydrated.
+                rate of dehydration depends on the temperature.
+                typical time to death: 6-12 hours
+        food: food is consumed once a day and when performing an action.
+                as with water they can only survive a certain time without food.
+                a penalty to strength is received if the survivor does not eat enough. the survivor will starve if they do.
+                if a survivor finds food in the wild they will eat it if they are malnourished.
+                not eat enough food.
+                typical time to death: 2-3 days
+        fuel: fuel is consumed when constructing items and when travelling. each survivor has a fuel requirement to move
+                to a new area. if there is not enough fuel people will be left behind.
+
+    temperature:
+        temperature varies based on the time of day, the outpost location, and the weather.
+        it affects how much water survivors need to drink and how effective their skills are.
+        cold reduces their need for water and increases their searching skills.
+
+    weather:
+        weather affects temperature and the safety of making excursions.
+        the more dangerous the weather the greater the chance of survivors being killed whilst searching.
+        weather can also increase or decrease the amount of water available in an environment.
+
+    danger:
+        survivors will encounter danger in various forms;
+            natural death by dehydration or malnutrition
+            attacks from animals or people
+                - can be prevented with sufficient strength
+            weather phenomena
+            mysterious danger/plot based danger
+                - danger increases as time spent at one location increases
+            being left behind
+            getting lost
+            infection?
+
+    the world:
+        the survivors are either pursuing a goal:
+            some kind of sanctuary
+            religious crusade
+            escape from continent/planet
+            inner peace
+        or fleeing from something:
+            warlord
+            'wild hunt'/vengeance of nature
+            miasma, causes wave of putrefaction, reduces water and food and increases danger
+            wildfire
+
+    survivor:
+        detailed, complex attributes that have varying effects on gameplay;
+            - age: affects strength and food consumption (older people/children are weaker, younger people eat more)
+            - gender: affects strength and food consumption (women are weaker but dont eat as much)
+            - weight: affects hunger (heavier people eat more)
+                      affects dehydration tolerance (heavier people need more water)
+            - dehydration tolerance: how long a survivor can go without drinking
+            - starvation tolerance: how long a survivor can go without eating
+            - thirst: how much a survivor needs to drink to be slaked
+            - hunger: how much a survivor needs to eat to be full
+            - traits: affects the behaviour of survivors, can be a boon or a curse
+            - strength: affects how much can be carried and how effective in combat the survivor is
+            - resource-find skills: affects how effectively survivors gather the different resources
+            - preferred temperature, location, and weather: affects the modifiers of each variable
+            - actions: what can be done this turn;
+                gather food (priority food(0.75) water(0.25), fuel(0))
+                gather water (priority water(0.75), food(0.25), fuel(0))
+                gather fuel (priority water(0.1), food(0.1), fuel (0.8))
+                gather all (priority water(0.35), food(0.35), fuel (0.3))
+                build shelter (uses fuel to build)
+                sleep (uses 1/2 as much food and water)
+                trait-based actions
+                    LIVEGIVER build water collector: gain water over time (uses fuel to build)
+                    FIREMAKER build fire: increase temperature at camp (uses fuel to build)
+                    MECHANIC build cooler: reduce temperature at camp (uses fuel to build)
+                    MASON build well: increase water in environment (uses fuel to build)
+                    FARMER herd chickens: gain food over time (no use)
+                    BAITER lay bait: increase food in environment (uses food to build)
+
+    survivor traits:
+            OBESE: greater hunger and thirst, greater malnutrition tolerance, lower dehydration tolerance, high fuel requirement
+            SURVIVOR: low strength, low hunger and thirst, high tolerance
+            HUNTER: very high food skill
+            DIVINER: very high water skill
+            FRACTIONATOR: very high fuel skill
+            SKINNY: reduced fuel requirements, low hunger, low strength
+            WARRIOR: increased fuel requirements, high hunger, high strength
+            DELVER: more likely to uncover stockpiles
+            DOZY: uses 1/4 food and water when sleeping, low strength, increased risk to danger
+            STRAIGHT THINKER: less affected by temperature modifiers
+            WEAK-MINDED: more affected by temperature modifiers
+            FORGETFUL: sometimes will return with nothing
+            WEAKLING: cannot hunt, very low strength
+            GREEDY: high food requirement
+            SALTY: high water requirement
+            UNSTOPPABLE: cannot be killed in combat
+            IMMORTAL: very high tolerance
+            ALCOHOLIC: cannot find water, reduced skills
+            ICECUBE: likes low temperatures
+            DESERT DEVIL: likes high temperatures
+            FRAIL: actions take twice as long
+            SICKLY: will die after some time
+            CURSED: will die quickly
+            MADDENED: may randomly kill other characters or self
+            GRIEVING: will sometimes sleep entire day
+            UNCONTROLLABLE: will perform random actions
+            GILLED: likes wet climates
+            SUCCULENT: likes dry climates
+            CLIMBER: likes high altitudes
+            MINER: likes low altitudes
+            STORMCHASER: likes bad weather
+            CLOUDWATCHER: likes overcast weather
+            SANDRAT: likes clear weather
+            LIVEGIVER build water collector: gain water over time (uses fuel to build)
+            FIREMAKER build fire: increase temperature at camp (uses fuel to build)
+            MECHANIC build cooler: reduce temperature at camp (uses fuel to build)
+            MASON build well: increase water in environment (uses fuel to build)
+            FARMER herd chickens: gain food over time (no use)
+            BAITER lay bait: increase food in environment (uses food to build)
+
+    environments:
+        environments have a carrying capacity
+            if the carrying capacity is lower than the number of colonists, some will be lost
+            however if the carrying capacity is greater, then colonists can be gained
+        environments have a climate, which dictates the types of weather that typically occur
+        there is a danger associated with each climate, though the cause of the danger may vary
+        environments have varying quantities of fuel, water, and food available
+        altitude level gives bonuses to certain traits, as does climate
+        types;
+            wasteland
+            mountains
+            ravines
+            abandoned
+            oasis
+            marsh
+            heath
+            prairie
+
+    weather:
+        weathers are categorised by temperature (hot, med, cold), and conditions (wet, dry, storm)
+        the temperature affects the range of day temperatures
+        conditions gives bonuses to certain traits
+        the weather can reduce or top up the water and food of environments
+        weather can also have an associated danger level, again the causes can vary
+        types;
+            drizzle
+            rainy
+            clear
+            cloudy
+            thunderstorm
+            foggy
+            sandstorm
+            floods
+            frost
+
+
+
