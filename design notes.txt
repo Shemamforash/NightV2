@@ -207,13 +207,28 @@ DESIGN:
             BAITER lay bait: increase food in environment (uses food to build)
 
     environments:
-        environments have a carrying capacity
+        environments have a carrying capacity                                                       //don't like this
             if the carrying capacity is lower than the number of colonists, some will be lost
             however if the carrying capacity is greater, then colonists can be gained
         environments have a climate, which dictates the types of weather that typically occur
         there is a danger associated with each climate, though the cause of the danger may vary
         environments have varying quantities of fuel, water, and food available
         altitude level gives bonuses to certain traits, as does climate
+        environments chosen from 3 classes;
+            class A - good environments (oasis and mountains)
+            class B - average environments (prairie, scrubland, oil sands, ravines)
+            class C - bad environments (ruins, wasteland, salt flats)
+        every time the survivors move to a new environment the difficulty changes
+        the type of environment is chosen based on the difficulty (low difficulty = good environments)
+        scenario:
+            move to new area, difficulty rating changes to 0.4
+            0.4 lies on boundary between class A and class B environments
+            range of difficulty is from 0.25 to 0.55 (0.4 +/- 0.15)
+            categories within this difficulty are A and B (15% chance A, 15% chance B)
+            probability distribution of environments in A is 50%, and 25% in B
+            multiply distribution within class by the chances of selecting that class to get
+            25% chance environment from class A 12.5% chance environment from class B
+            generate random number and select environment based on this value
         types;
             wasteland
             mountains
@@ -230,6 +245,11 @@ DESIGN:
         conditions gives bonuses to certain traits
         the weather can reduce or top up the water and food of environments
         weather can also have an associated danger level, again the causes can vary
+        weather chosen based on environmental ratings;
+            weather rating from 0 to 1, 0 being dry and 1 being wet, 0.5 would be mix wet and dry weather
+            dry and wet severity rating from 0 to 1, 0 being least severe, 1 being most severe
+        weather rating dictates the distribution of wet and dry weather in an environment
+        severity rating dictates the types of weather in the environment
         types;
             drizzle
             rainy
