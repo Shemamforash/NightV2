@@ -10,6 +10,46 @@
 
 var Environment = {};
 
+Environment.Current = (function() {
+    var current_environment, current_weather;
+    var temperature_range = [];
+
+    function calculate_temperatures() {
+        var current_temp = current_environment.base_temperature - 15;
+        temperature_range = [];
+        for(var i = 0; i < 12; ++i){
+            temperature_range.push(current_temp);
+            if(i < 8) {
+                current_temp += 3;
+            } else {
+                current_temp -= 3;
+            }
+        }
+    }
+
+    return {
+        //if trip is made to new environment
+        change_environment : function(difficulty) {
+            current_environment = Environment.Types.generate_environment(difficulty);
+            Environment.Current.change_weather();
+        },
+        //when day changes
+        change_weather : function() {
+            current_weather = Environment.Weather.generate_weather(current_environment);
+            calculate_temperatures();
+        },
+        get_environment : function() {
+            return current_environment;
+        },
+        get_weather : function() {
+            return current_weather;
+        },
+        get_temperature : function() {
+            return temperature_range[World.Time.get_date_and_time().time - 6];
+        }
+    }
+}());
+
 Environment.Weather = (function () {
     function weather_constructor(name, food_mod, water_mod, temperature_mod, weather_danger, weather_severity) {
         return {
@@ -46,7 +86,8 @@ Environment.Weather = (function () {
         weather_constructor("Hurricane", -2, 0, -10, 3, 0.4),
         weather_constructor("Earthquake", -1, 0, 0, 4, -0.4)
     ];
-    var all_weather = dry_weather + wet_weather + misc_weather;
+
+    var all_weather = dry_weather.concat(wet_weather.concat(misc_weather));
 
     function get_weather_around_severity(arr, severity) {
         var available_weather = [];
@@ -59,11 +100,26 @@ Environment.Weather = (function () {
         return helper.get_random(arr);
     }
 
+    function get_weather_by_name(name) {
+        for(var i = 0; i < all_weather.length; ++i) {
+            if(all_weather[i].weather_name === name){
+                return all_weather[i];
+            }
+        }
+        throw("Weather '" + name + "' not found");
+    }
+
     return {
         generate_weather : function(environment) {
-            if(Math.random() < 0.1) {
+            var misc_or_susceptible_chance = Math.random();
+            console.log(environment.env_condition);
+            if(misc_or_susceptible_chance < 0.2 && environment.susceptible_weather != null) {
+                //20% chance to select susceptible weather
+                return get_weather_by_name(environment.susceptible_weather);
+            } else if(misc_or_susceptible_chance < 0.1) {
+                //10% chance to select misc weather
                 return get_weather_around_severity(misc_weather, 0.2);
-            } else if (Math.random() < environment.env_condition) {
+            } else if (Math.random() > environment.env_condition) {
                 //wet weather
                 return get_weather_around_severity(wet_weather, environment.wet_severity);
             } else {
@@ -72,11 +128,10 @@ Environment.Weather = (function () {
             }
         }
     }
-
 }());
 
 Environment.Types = (function () {
-    function environment_constructor(name, fuel, water, food, condition, dry_severity, wet_severity, weather) {
+    function environment_constructor(name, fuel, water, food, condition, dry_severity, wet_severity, weather, base_temperature) {
         return {
             env_name: name,
             env_fuel: fuel,
@@ -85,32 +140,33 @@ Environment.Types = (function () {
             env_condition: condition,
             dry_severity: dry_severity,
             wet_severity: wet_severity,
-            susceptible_weather: weather
+            susceptible_weather: weather,
+            base_temperature: base_temperature
         };
     }
 
     //0 - 0.3 difficulty
     var class_A = [
-        environment_constructor("Mountains", 2, 3, 3, 0.2, 0.1, 0.5, "Wet Storm"),
-        environment_constructor("Oasis", 1, 3, 3, 0.6, 0.1, 0.2, null)
+        environment_constructor("Mountains", 2, 3, 3, 0.2, 0.1, 0.5, "Wet storm", 10),
+        environment_constructor("Oasis", 1, 3, 3, 0.6, 0.1, 0.2, null, 20)
     ];
 
     //0.3-0.75 difficulty
     var class_B = [
-        environment_constructor("Oil Sands", 3, 1, 1, 0.7, 0.3, 0.2, null),
-        environment_constructor("Ravines", 2, 3, 2, 0.3, 0.2, 0.6, "Floods"),
-        environment_constructor("Prairie", 1, 2, 3, 0.4, 0.4, 0.4, "Hurricane"),
-        environment_constructor("Scrublands", 2, 2, 2, 0.6, 0.6, 0.2, "Firestorm")
+        environment_constructor("Oil Sands", 3, 1, 1, 0.7, 0.3, 0.2, null, 20),
+        environment_constructor("Ravines", 2, 3, 2, 0.3, 0.2, 0.6, "Floods", 15),
+        environment_constructor("Prairie", 1, 2, 3, 0.4, 0.4, 0.4, "Hurricane", 25),
+        environment_constructor("Scrublands", 2, 2, 2, 0.6, 0.6, 0.2, "Wildfire", 30)
     ];
 
     //0.75-1 difficulty
     var class_C = [
-        environment_constructor("Salt Flats", 2, 1, 1, 0.8, 0.4, 0.1, "Drought"),
-        environment_constructor("Wasteland", 1, 1, 2, 1, 0.8, 0, "Sandstorm"),
-        environment_constructor("Ruins", 1, 2, 1, 0.5, 0.5, 0.5, "Earthquake")
+        environment_constructor("Salt Flats", 2, 1, 1, 0.8, 0.4, 0.1, "Drought", 20),
+        environment_constructor("Wasteland", 1, 1, 2, 1, 0.8, 0, "Sandstorm", 35),
+        environment_constructor("Ruins", 1, 2, 1, 0.5, 0.5, 0.5, "Earthquake", 15)
     ];
 
-    var environment_types = class_A + class_B + class_C;
+    var environment_types = class_A.concat(class_B.concat(class_C));
 
     return {
         generate_environment : function(difficulty) {

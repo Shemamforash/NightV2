@@ -13,30 +13,36 @@ World.Time = (function(){
     var prev_time;
     var total_time = 0;
     var paused = true;
+    var hour_counter = 0;
+    var hour_length_millis = 5000;
 
     function advance_hour() {
         time == 19 ? advance_day() : time += 1;
     }
 
     function advance_day() {
-
-    }
-
-    function start_loop() {
-        // todo load_game();
-        prev_time = Date.now();
-        setInterval(update_loop, 17);
-        paused = false;
+        Environment.Current.change_weather();
+        day += 1;
+        time = 6;
     }
 
     function update_loop() {
         if(!paused) {
-            total_time += Date.now() - prev_time;
+            var delta = Date.now() - prev_time;
+            total_time += delta;
+            hour_counter += delta;
             prev_time = Date.now();
-            if (total_time % 10000 === 0) {
+            if (hour_counter >= hour_length_millis) {
+                hour_counter -= hour_length_millis;
                 advance_hour();
             }
         }
+        update_UI();
+    }
+
+    function new_game() {
+        Outpost.Status.make_trip();
+        advance_day();
     }
 
     return {
@@ -50,6 +56,13 @@ World.Time = (function(){
             paused = true;
         },
         unpause : function() {
+            paused = false;
+        },
+        start_loop : function() {
+            // todo load_game();
+            prev_time = Date.now();
+            setInterval(update_loop, 17);
+            new_game();
             paused = false;
         }
     }
