@@ -27,11 +27,11 @@ World.Time = (function(){
     }
 
     function update_loop() {
+        var delta = Date.now() - prev_time;
+        total_time += delta;
+        prev_time = Date.now();
         if(!paused) {
-            var delta = Date.now() - prev_time;
-            total_time += delta;
             hour_counter += delta;
-            prev_time = Date.now();
             if (hour_counter >= hour_length_millis) {
                 hour_counter -= hour_length_millis;
                 advance_hour();

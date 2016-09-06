@@ -25,4 +25,16 @@ function update_UI() {
     $("#temperature_label").text(Environment.Current.get_temperature() + "\xB0C");
 }
 
+function toggle_pause() {
+    var button = $("#pause_button");
+    if(button.text() === "Pause") {
+        button.text("Unpause");
+        World.Time.pause();
+        $("#screen_containers").css({top: "-100%"});
+    } else {
+        button.text("Pause");
+        World.Time.unpause();
+    }
+}
+
 $(document).ready(start);
