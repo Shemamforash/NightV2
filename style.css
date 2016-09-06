@@ -1,127 +1,217 @@
+/*Global and body styling*/
+
 body {
     background-color: black;
-    overflow: hidden;
-    position: relative;
+    /*overflow: hidden;*/
+    position: absolute;
+    height: 100%;
 }
 
 * {
     width: 100%;
     height: 100%;
-    margin: 0px;
-    color: white;
-    font-family: monospace;
-    font-size: 15px;
-    border: 0px;
-    background-color: transparent;
-    text-align: center;
+    position: relative;
+
     float: left;
-    line-height: 40px;
+    border: 0px;
+    margin: 0px;
+    background-color: transparent;
+
+    color: white;
+    font-family: 'VT323', monospace;
+    font-size: 15px;
+    text-align: center;
+    line-height: 15px;
 }
 
-#top {
+* > .centre_text {
+    height: 20px;
+    line-height: 20px;
+    font-size: 20px;
+}
+
+/*Game screen styling to allow switching screens*/
+
+.screen_div {
+    position: relative;
+    height: calc(100% / 3);
+}
+
+#container {
+    position: absolute;
+    height: 300%;
+}
+
+#game_screen {
+    /*background-color: red;*/
+}
+
+#pause_screen {
+    /*background-color: orangered;*/
+}
+
+#day_screen {
+    /*background-color: orange;*/
+}
+
+/*Containers for pause button in bottom container and page content in top container*/
+
+.content {
+    height: calc(100% - 40px);
+}
+
+.bottom {
     height: 40px;
 }
 
-#middle-upper {
-    height: calc(55% - 40px);
+/*PAUSE BUTTON FUNCTIONALITY and related pause stuff*/
+
+.pause_button:hover {
+    background-color: white;
+    color: black;
+
+    margin: 5px;
+    height: 30px;
+    width: calc(100% - 10px);
 }
 
-#middle-lower {
+.pause_button {
+    line-height: 30px;
+    font-size: 30px;
+}
+
+.pause_button:active {
+    background-color: white;
+    color: black;
+
+    margin: 0px;
+    height: 40px;
+    width: 100%;
+}
+
+.pause_button:focus {
+    outline: 0;
+}
+
+/*for centreing the PAUSED text on the pause screen*/
+
+.centre_text {
+    top: 50%;
+    position: absolute;
+    transform: translate(0%, -50%);
+}
+
+/*pause screen content*/
+
+#pause_text {
+    font-size: 90px;
+    line-height: 90px;
+    height: 90px;
+}
+
+/*MAIN GAME SCREEN*/
+/*top section*/
+
+#upper {
+    height: 40px;
+}
+
+.resource_label {
+    width: calc(100% / 3);
+    position: relative;
+}
+
+/*mid section*/
+#mid {
+    height: calc(45% - 40px);
+}
+
+#mid_phrase {
     height: 40%;
 }
 
-#bottom {
-    height: 5%;
+#phrase_text {
+    height: 40px;
+    line-height: 40px;
+    font-size: 40px;
 }
 
-#phrase_label {
-    height: 200px;
-    line-height: 200px;
-    font-size: 24px;
-}
-
-#event_log {
-    height: calc(100% - 260px);
+/*event stuff*/
+#mid_event {
+    height: 40%;
 }
 
 .event_div {
     height: 25%;
 }
 
-#event_one {
+#event_one > .centre_text {
     color: white;
-    font-size: 16px;
+    font-size: 18px;
+    line-height: 18px;
+    height: 18px;
 }
 
-#event_two {
+#event_two > .centre_text {
     color: lightgray;
-    font-size: 14px;
+    font-size: 16px;
+    line-height: 16px;
+    height: 16px;
 }
 
-#event_three {
+#event_three > .centre_text {
     color: gray;
-    font-size: 12px;
+    font-size: 14px;
+    line-height: 14px;
+    height: 14px;
 }
 
-#event_four {
+#event_four > .centre_text {
     color: dimgray;
-    font-size: 10px;
+    font-size: 12px;
+    line-height: 12px;
+    height: 12px;
 }
 
-#world_info_label {
-    height: 60px;
-    line-height: 60px;
+/*environment and outpost information*/
+
+#mid_world {
+    height: 30%;
 }
 
 .world_info {
     width: 20%;
 }
 
-.resource_info {
-    width: 33%;
+.world_info > .centre_text {
+    /*font-size: 12px;*/
+    /*line-height: 12px;*/
+    /*height: 12px;*/
 }
 
-#pause_button:hover {
-    background-color: white;
-    border: 5px solid black;
-    color: black;
+/*lower section*/
+#lower {
+    height: 50%;
 }
 
-#pause_button:active {
-    background-color: white;
-    border: none;
-    color: black;
+#table_headers {
+    width: 96%;
+    height: 60px;
+    padding-left: 2%;
+    padding-right: 2%;
 }
 
-#pause_button:focus {
-    outline:0;
+#table_headers > * > .centre_text {
+    /*font-size: 14px;*/
+    /*line-height: 14px;*/
+    /*height: 14px;*/
 }
 
-.toggle_div {
-    height: 100%;
-    position: relative;
-    width: 8%;
+#table_headers > * {
+    height: 40px;
 }
 
-.toggle_button {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    cursor: pointer;
-    border: 2px solid white;
-    padding: 5px 5px;
-    background: black;
-    width: 15px;
-    height: 15px;
-}
-
-.toggle_button.down {
-    border: 2px solid white;
-    background: white;
-    padding: 5px 5px;
-}
-
+/*survivor elements*/
 .survivor_div {
     position: relative;
     display: inline-block;
@@ -152,20 +242,34 @@ body {
     transition: opacity 1s;
 }
 
+.toggle_div {
+    height: 100%;
+    position: relative;
+    width: 8%;
+}
+
+.toggle_button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    border: 2px solid white;
+    padding: 5px 5px;
+    background: black;
+    width: 15px;
+    height: 15px;
+}
+
+.toggle_button.down {
+    border: 2px solid white;
+    background: white;
+    padding: 5px 5px;
+}
+
 .survivor_div:hover .tooltip_span {
     visibility: visible;
     opacity: 1;
-}
-
-#table_headers {
-    width: 96%;
-    height: 60px;
-    padding-left: 2%;
-    padding-right: 2%;
-}
-
-#table_headers > * {
-    height: 40px;
 }
 
 .survivor_name {
@@ -191,18 +295,4 @@ body {
 
 .survivor_actions:disabled {
     color: grey;
-}
-
-#pause_game_screen_div {
-    width: 100%;
-    height: 100%;
-}
-
-.game_screen {
-    height: 33%;
-}
-
-#screen_containers {
-    position: absolute;
-    height: 300%;
 }

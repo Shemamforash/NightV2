@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Night</title>
     <link type="text/css" rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css?family=VT323" rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="Helper.js"></script>
     <script src="Environment.js"></script>
@@ -13,49 +14,106 @@
     <script src="UI.js"></script>
 </head>
 <body>
-<div id="screen_containers">
-    <div id="game_screen_div" class="game_screen">
-        <div id="top">
-            <div id="fuel_label" class="resource_info">Fuel: 0</div>
-            <div id="water_label" class="resource_info">Water: 0</div>
-            <div id="food_label" class="resource_info">Food: 0</div>
-        </div>
-        <div id="middle-upper">
-            <div id="phrase_label">The sky is dark and the sands burn.</div>
-            <div id="event_log">
-                <div id="event_one" class="event_div"></div>
-                <div id="event_two" class="event_div"></div>
-                <div id="event_three" class="event_div"></div>
-                <div id="event_four" class="event_div"></div>
+<div id="container">
+    <div id="game_screen" class="screen_div">
+        <div class="content">
+            <div id="upper">
+                <div id="fuel_label" class="resource_label">
+                    <div class="centre_text">Fuel: 0</div>
+                </div>
+                <div id="water_label" class="resource_label">
+                    <div class="centre_text">Water: 0</div>
+                </div>
+                <div id="food_label" class="resource_label">
+                    <div class="centre_text">Food: 0</div>
+                </div>
             </div>
-            <div id="world_info_label">
-                <div id="location_label" class="world_info"></div>
-                <div id="group_size_label" class="world_info">1</div>
-                <div id="day_number_label" class="world_info">0</div>
-                <div id="weather_label" class="world_info">Searing</div>
-                <div id="temperature_label" class="world_info">40C</div>
+            <div id="mid">
+                <div id="mid_phrase">
+                    <div id="phrase_text" class="centre_text">The sky is dark and the sands burn.</div>
+                </div>
+                <div id="mid_event">
+                    <div id="event_one" class="event_div">
+                        <div class="centre_text">Event one</div>
+                    </div>
+                    <div id="event_two" class="event_div">
+                        <div class="centre_text">Event two</div>
+                    </div>
+                    <div id="event_three" class="event_div">
+                        <div class="centre_text">Event three</div>
+                    </div>
+                    <div id="event_four" class="event_div">
+                        <div class="centre_text">Event four</div>
+                    </div>
+                </div>
+                <div id="mid_world">
+                    <div id="location_label" class="world_info">
+                        <div class="centre_text"></div>
+                    </div>
+                    <div id="group_size_label" class="world_info">
+                        <div class="centre_text">1</div>
+                    </div>
+                    <div id="day_number_label" class="world_info">
+                        <div class="centre_text">0</div>
+                    </div>
+                    <div id="weather_label" class="world_info">
+                        <div class="centre_text">Weather</div>
+                    </div>
+                    <div id="temperature_label" class="world_info">
+                        <div class="centre_text">40C</div>
+                    </div>
+                </div>
+            </div>
+            <div id="lower">
+                <div id="table_headers">
+                    <div class="survivor_name">
+                        <div class="centre_text">Name</div>
+                    </div>
+                    <div class="survivor_trait">
+                        <div class="centre_text">Trait 1</div>
+                    </div>
+                    <div class="survivor_trait">
+                        <div class="centre_text">Trait 2</div>
+                    </div>
+                    <div class="survivor_resource">
+                        <div class="centre_text">Food req</div>
+                    </div>
+                    <div class="survivor_resource">
+                        <div class="centre_text">Water req</div>
+                    </div>
+                    <div class="survivor_resource">
+                        <div class="centre_text">Fuel req</div>
+                    </div>
+                    <div class="survivor_resource">
+                        <div class="centre_text">Hunting</div>
+                    </div>
+                    <div class="survivor_resource">
+                        <div class="centre_text">Aqua</div>
+                    </div>
+                    <div class="survivor_resource">
+                        <div class="centre_text">Scavenging</div>
+                    </div>
+                    <div class="toggle_div">
+                        <div class="centre_text">To save?</div>
+                    </div>
+                </div>
             </div>
         </div>
-        <div id="middle-lower">
-            <div id="table_headers">
-                <div class="survivor_name">Name</div>
-                <div class="survivor_trait">Trait 1</div>
-                <div class="survivor_trait">Trait 2</div>
-                <div class="survivor_resource">Food req</div>
-                <div class="survivor_resource">Water req</div>
-                <div class="survivor_resource">Fuel req</div>
-                <div class="survivor_resource">Hunting</div>
-                <div class="survivor_resource">Aqua</div>
-                <div class="survivor_resource">Scavenging</div>
-                <div class="toggle_div">To save?</div>
-            </div>
-        </div>
-        <div id="bottom">
-            <button id="pause_button" onclick="toggle_pause()">Pause</button>
+        <div class="bottom">
+            <button class="pause_button" id="pause_top">Pause</button>
         </div>
     </div>
-    <div id="pause_game_screen_div" class="game_screen">PAUSED</div>
-    <div id="end_day_screen_div" class="game_screen">
+    <div id="pause_screen" class="screen_div">
+        <div class="content">
+            <div id="pause_text" class="centre_text">
+                PAUSED
+            </div>
+        </div>
+        <div class="bottom">
+            <button class="pause_button" id="pause_bottom">Pause</button>
+        </div>
+    </div>
+    <div id="day_screen" class="screen_div">
         <div>the day is over</div>
         <button>Next day</button>
         <button>Move on...</button>

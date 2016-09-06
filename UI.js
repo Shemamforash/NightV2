@@ -5,9 +5,7 @@
  * Created by samwe on 21/08/2016.
  */
 function start() {
-    $(document).on("click", ".toggle_button", function(){
-        $(this).toggleClass("down");
-    });
+    add_click_events();
     World.Time.start_loop();
 }
 
@@ -19,21 +17,28 @@ function post_event(event) {
 }
 
 function update_UI() {
-    $("#location_label").text(Environment.Current.get_environment().env_name);
-    $("#day_number_label").text("Day: " + World.Time.get_date_and_time().date + "  " + World.Time.get_date_and_time().time + ":00");
-    $("#weather_label").text(Environment.Current.get_weather().weather_name);
-    $("#temperature_label").text(Environment.Current.get_temperature() + "\xB0C");
+    $("#location_label > .centre_text").text(Environment.Current.get_environment().env_name);
+    $("#day_number_label > .centre_text").text("Day: " + World.Time.get_date_and_time().date + "  " + World.Time.get_date_and_time().time + ":00");
+    $("#weather_label > .centre_text").text(Environment.Current.get_weather().weather_name);
+    $("#temperature_label > .centre_text").text(Environment.Current.get_temperature() + "\xB0C");
 }
 
-function toggle_pause() {
-    var button = $("#pause_button");
-    if(button.text() === "Pause") {
-        button.text("Unpause");
+function add_click_events() {
+    $(document).on("click", ".toggle_button", function(){
+        $(this).toggleClass("down");
+    });
+    $(document).on("click", ".pause_button", toggle_pause)
+}
+
+function toggle_pause(e) {
+    if(e.target.id === "pause_top") {
+        $(".pause_button").text("Unpause");
         World.Time.pause();
-        $("#screen_containers").css({top: "-100%"});
+        $("#container").css({top: "-100%"});
     } else {
-        button.text("Pause");
+        $(".pause_button").text("Pause");
         World.Time.unpause();
+        $("#container").css({top: "0%"});
     }
 }
 
