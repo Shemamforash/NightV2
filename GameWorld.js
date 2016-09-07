@@ -14,10 +14,10 @@ World.Time = (function(){
     var total_time = 0;
     var paused = true;
     var hour_counter = 0;
-    var hour_length_millis = 5000;
+    var hour_length_millis = 1000;
 
     function advance_hour() {
-        time == 19 ? advance_day() : time += 1;
+        time == 18 ? end_day() : time += 1;
     }
 
     function advance_day() {
@@ -64,6 +64,9 @@ World.Time = (function(){
             setInterval(update_loop, 17);
             new_game();
             paused = false;
+        },
+        next_day : function() {
+            advance_day();
         }
     }
 }());

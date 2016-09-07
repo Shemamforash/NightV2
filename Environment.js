@@ -15,15 +15,17 @@ Environment.Current = (function() {
     var temperature_range = [];
 
     function calculate_temperatures() {
-        var current_temp = current_environment.base_temperature - 15;
         temperature_range = [];
-        for(var i = 0; i < 12; ++i){
-            temperature_range.push(current_temp);
-            if(i < 8) {
-                current_temp += 3;
-            } else {
-                current_temp -= 3;
-            }
+        var temperature_val;
+        var min_max_diff;
+        for(var i = 0; i < 13; ++i){
+            //equation for temperature is (max_temp - min_temp)*sin(c * x) + min_temp
+            //increase i coefficient for an earlier peak temperature
+            temperature_val = Math.sin(i * 0.21);
+            min_max_diff = current_environment.max_temp - current_environment.min_temp;
+            temperature_val = min_max_diff * temperature_val + current_environment.min_temp;
+            temperature_val += current_weather.temperature_mod;
+            temperature_range.push(Math.floor(temperature_val));
         }
     }
 
@@ -131,7 +133,7 @@ Environment.Weather = (function () {
 }());
 
 Environment.Types = (function () {
-    function environment_constructor(name, fuel, water, food, condition, dry_severity, wet_severity, weather, base_temperature) {
+    function environment_constructor(name, fuel, water, food, condition, dry_severity, wet_severity, weather, min_temp, max_temp) {
         return {
             env_name: name,
             env_fuel: fuel,
@@ -141,29 +143,30 @@ Environment.Types = (function () {
             dry_severity: dry_severity,
             wet_severity: wet_severity,
             susceptible_weather: weather,
-            base_temperature: base_temperature
+            min_temp: min_temp,
+            max_temp: max_temp
         };
     }
 
     //0 - 0.3 difficulty
     var class_A = [
-        environment_constructor("Mountains", 2, 3, 3, 0.2, 0.1, 0.5, "Wet storm", 10),
-        environment_constructor("Oasis", 1, 3, 3, 0.6, 0.1, 0.2, null, 20)
+        environment_constructor("Mountains", 2, 3, 3, 0.2, 0.1, 0.5, "Wet storm", -10, 15),
+        environment_constructor("Oasis", 1, 3, 3, 0.6, 0.1, 0.2, null, 18, 24)
     ];
 
     //0.3-0.75 difficulty
     var class_B = [
-        environment_constructor("Oil Sands", 3, 1, 1, 0.7, 0.3, 0.2, null, 20),
-        environment_constructor("Ravines", 2, 3, 2, 0.3, 0.2, 0.6, "Floods", 15),
-        environment_constructor("Prairie", 1, 2, 3, 0.4, 0.4, 0.4, "Hurricane", 25),
-        environment_constructor("Scrublands", 2, 2, 2, 0.6, 0.6, 0.2, "Wildfire", 30)
+        environment_constructor("Oil Sands", 3, 1, 1, 0.7, 0.3, 0.2, null, 15, 30),
+        environment_constructor("Ravines", 2, 3, 2, 0.3, 0.2, 0.6, "Floods", -5, 10),
+        environment_constructor("Prairie", 1, 2, 3, 0.4, 0.4, 0.4, "Hurricane", 20, 35),
+        environment_constructor("Scrublands", 2, 2, 2, 0.6, 0.6, 0.2, "Wildfire", 28, 35)
     ];
 
     //0.75-1 difficulty
     var class_C = [
-        environment_constructor("Salt Flats", 2, 1, 1, 0.8, 0.4, 0.1, "Drought", 20),
-        environment_constructor("Wasteland", 1, 1, 2, 1, 0.8, 0, "Sandstorm", 35),
-        environment_constructor("Ruins", 1, 2, 1, 0.5, 0.5, 0.5, "Earthquake", 15)
+        environment_constructor("Salt Flats", 2, 1, 1, 0.8, 0.4, 0.1, "Drought", 15, 25),
+        environment_constructor("Wasteland", 1, 1, 2, 1, 0.8, 0, "Sandstorm", 18, 45),
+        environment_constructor("Ruins", 1, 2, 1, 0.5, 0.5, 0.5, "Earthquake", 10, 17)
     ];
 
     var environment_types = class_A.concat(class_B.concat(class_C));

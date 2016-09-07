@@ -27,7 +27,17 @@ function add_click_events() {
     $(document).on("click", ".toggle_button", function(){
         $(this).toggleClass("down");
     });
-    $(document).on("click", ".pause_button", toggle_pause)
+    $(document).on("click", ".pause_button", toggle_pause);
+    $(document).on("click", "#next_day_button", change_day);
+}
+
+function change_day() {
+    $("#container").css({top: "0%"});
+    World.Time.next_day();
+}
+
+function end_day() {
+    $("#container").css({top: "-200%"});
 }
 
 function toggle_pause(e) {

@@ -66,7 +66,7 @@ body {
 
 /*PAUSE BUTTON FUNCTIONALITY and related pause stuff*/
 
-.pause_button:hover {
+.wide_button:hover {
     background-color: white;
     color: black;
 
@@ -75,12 +75,12 @@ body {
     width: calc(100% - 10px);
 }
 
-.pause_button {
+.wide_button {
     line-height: 30px;
     font-size: 30px;
 }
 
-.pause_button:active {
+.wide_button:active {
     background-color: white;
     color: black;
 
@@ -89,7 +89,7 @@ body {
     width: 100%;
 }
 
-.pause_button:focus {
+.wide_button:focus {
     outline: 0;
 }
 
@@ -107,6 +107,30 @@ body {
     font-size: 90px;
     line-height: 90px;
     height: 90px;
+}
+
+/*end day screen*/
+
+#day_end_text {
+    height: 20%;
+    top: 40%;
+}
+
+#day_end_text > .centre_text {
+    height: 90px;
+    line-height: 90px;
+    font-size: 90px;
+}
+
+#day_button_container {
+    height: 15%;
+    top: 40%;
+}
+
+#day_button_container > * {
+    width: 96%;
+    height: 46%;
+    margin: 2%;
 }
 
 /*MAIN GAME SCREEN*/
