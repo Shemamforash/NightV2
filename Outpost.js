@@ -13,13 +13,23 @@ var Outpost = {};
 
 Outpost.Survivors = (function() {
     var alive = [], dead = [];
+
+    return {
+        add_survivor : function() {
+            var new_survivor = Survivor.generate_survivor();
+            alive.push(new_survivor);
+            UI.Dynamic.add_survivor_elements(new_survivor);
+        },
+        kill_survivor : function(s) {
+            dead.push(s);
+            alive.remove(s);
+        }
+    };
 }());
 
 Outpost.Resources = (function() {
     var water, fuel, food;
 }());
-
-
 
 Outpost.Status = (function() {
     var difficulty = 0;

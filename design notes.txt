@@ -145,7 +145,24 @@ DESIGN:
             - dehydration tolerance: how long a survivor can go without drinking
             - starvation tolerance: how long a survivor can go without eating
             - thirst: how much a survivor needs to drink to be slaked
+                this is how much a survivor needs to drink every day
+                it is divided up into equal amounts for every hour e.g 3 litres over 12 hours = 0.25 l/hr
+                the actual amount of water required is modified by the difference between the current temperature and the optimum
+                //if a survivor cannot drink the required amount their dehydration level increases by 1hr
+                //if a survivor can drink the required amount their dehydration level decreases by 1hr (max 0)
+                the dehydration tolerance indicates how many litres of water debt the survivor can sustain
+                if a survivor cannot drink the required amount their dehydration increases by the difference between the amount drunk and the amount required
+                if a survivor can drink the required amount their dehydration stays the same
+                if a survivor can drink more than the required amount they will reduce their dehydration level by the corresponding amount
+                a survivor cannot drink more than their thirst plus any water debt from dehydration
+                if the dehydration level reaches the tolerance level they die
+                water is divided amongst survivors in the following order:
+                    - highest dehydration with priority
+                    - those with priority
+                    - those with highest dehydration
+                    - those without priority
             - hunger: how much a survivor needs to eat to be full
+                same mechanics as thirst
             - traits: affects the behaviour of survivors, can be a boon or a curse
             - strength: affects how much can be carried and how effective in combat the survivor is
             - resource-find skills: affects how effectively survivors gather the different resources
@@ -164,6 +181,9 @@ DESIGN:
                     MASON build well: increase water in environment (uses fuel to build)
                     FARMER herd chickens: gain food over time (no use)
                     BAITER lay bait: increase food in environment (uses food to build)
+        distribution curve:
+            if age <= ideal age: -0.0045(x-idealage)^2+1
+               else            : -0.0001(x-idealage)^2+1
 
     survivor traits:
             OBESE: greater hunger and thirst, greater malnutrition tolerance, lower dehydration tolerance, high fuel requirement

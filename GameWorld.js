@@ -42,6 +42,7 @@ World.Time = (function(){
 
     function new_game() {
         Outpost.Status.make_trip();
+        Outpost.Survivors.add_survivor();
         advance_day();
     }
 
@@ -67,6 +68,9 @@ World.Time = (function(){
         },
         next_day : function() {
             advance_day();
+        },
+        make_trip : function() {
+            new_game(); //probably should rename this...
         }
     }
 }());

@@ -99,7 +99,7 @@ Environment.Weather = (function () {
                 available_weather.push(arr[i]);
             }
         }
-        return helper.get_random(arr);
+        return Helper.get_random(arr);
     }
 
     function get_weather_by_name(name) {
@@ -191,11 +191,11 @@ Environment.Types = (function () {
             }
             var random_int = Math.random() * 0.3;
             if(random_int < class_A_chance) {
-                return helper.get_random(class_A);
+                return Helper.get_random(class_A);
             } else if (random_int < class_B_chance) {
-                return helper.get_random(class_B);
+                return Helper.get_random(class_B);
             } else if (random_int <= class_C_chance) {
-                return helper.get_random(class_C);
+                return Helper.get_random(class_C);
             }
         }
     }

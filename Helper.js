@@ -4,20 +4,20 @@
 /**
  * Created by samwe on 24/08/2016.
  */
-var helper = {};
+var Helper = {};
 
-helper.randomInt = function(i) {
+Helper.randomInt = function(i) {
     return Math.floor(Math.random() * i);
 };
 
-helper.create_function_wrapper = function(n, f){
+Helper.create_function_wrapper = function(n, f){
     return {
         function_name: n,
         execute: f
     }
 };
 
-helper.shuffle = function(a) {
+Helper.shuffle = function(a) {
     var j, x, i;
     for (i = a.length; i; i--) {
         j = Math.floor(Math.random() * i);
@@ -27,11 +27,11 @@ helper.shuffle = function(a) {
     }
 };
 
-helper.get_random = function(arr) {
-    return arr[helper.randomInt(arr.length)];
+Helper.get_random = function(arr) {
+    return arr[Helper.randomInt(arr.length)];
 };
 
-helper.resource_creator = function(name) {
+Helper.resource_creator = function(name) {
     return {
         resource_name: name,
         remaining: 0,
