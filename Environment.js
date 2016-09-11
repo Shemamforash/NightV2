@@ -38,6 +38,7 @@ Environment.Current = (function() {
         //when day changes
         change_weather : function() {
             current_weather = Environment.Weather.generate_weather(current_environment);
+            Listener.LinkToObject(current_weather);
             calculate_temperatures();
         },
         get_environment : function() {
@@ -60,7 +61,12 @@ Environment.Weather = (function () {
             food_mod: food_mod,
             temperature_mod: temperature_mod,
             weather_danger: weather_danger,
-            weather_severity: weather_severity
+            weather_severity: weather_severity,
+            receive_hour : function() {
+                Environment.Current.get_environment().env_water += this.water_mod / 12;
+                Environment.Current.get_environment().env_food += this.food_mod / 12;
+                console.log(Environment.Current.get_environment().env_water);
+            }
         }
     }
 
@@ -115,7 +121,7 @@ Environment.Weather = (function () {
         generate_weather : function(environment) {
             var misc_or_susceptible_chance = Math.random();
             console.log(environment.env_condition);
-            if(misc_or_susceptible_chance < 0.2 && environment.susceptible_weather != null) {
+            if(misc_or_susceptible_chance < 0.2 && environment.susceptible_weather !== null) {
                 //20% chance to select susceptible weather
                 return get_weather_by_name(environment.susceptible_weather);
             } else if(misc_or_susceptible_chance < 0.1) {
@@ -150,26 +156,37 @@ Environment.Types = (function () {
 
     //0 - 0.3 difficulty
     var class_A = [
-        environment_constructor("Mountains", 2, 3, 3, 0.2, 0.1, 0.5, "Wet storm", -10, 15),
-        environment_constructor("Oasis", 1, 3, 3, 0.6, 0.1, 0.2, null, 18, 24)
+        environment_constructor("Mountains", 1, 1.5, 1.5, 0.2, 0.1, 0.5, "Wet storm", -10, 15),
+        environment_constructor("Oasis", 0.5, 1.5, 1.5, 0.6, 0.1, 0.2, null, 18, 24)
     ];
 
     //0.3-0.75 difficulty
     var class_B = [
-        environment_constructor("Oil Sands", 3, 1, 1, 0.7, 0.3, 0.2, null, 15, 30),
-        environment_constructor("Ravines", 2, 3, 2, 0.3, 0.2, 0.6, "Floods", -5, 10),
-        environment_constructor("Prairie", 1, 2, 3, 0.4, 0.4, 0.4, "Hurricane", 20, 35),
-        environment_constructor("Scrublands", 2, 2, 2, 0.6, 0.6, 0.2, "Wildfire", 28, 35)
+        environment_constructor("Oil Sands", 1.5, 0.5, 0.5, 0.7, 0.3, 0.2, null, 15, 30),
+        environment_constructor("Ravines", 1, 1.5, 1, 0.3, 0.2, 0.6, "Floods", -5, 10),
+        environment_constructor("Prairie", 0.5, 1, 1.5, 0.4, 0.4, 0.4, "Hurricane", 20, 35),
+        environment_constructor("Scrublands", 1, 1, 1, 0.6, 0.6, 0.2, "Wildfire", 28, 35)
     ];
 
     //0.75-1 difficulty
     var class_C = [
-        environment_constructor("Salt Flats", 2, 1, 1, 0.8, 0.4, 0.1, "Drought", 15, 25),
-        environment_constructor("Wasteland", 1, 1, 2, 1, 0.8, 0, "Sandstorm", 18, 45),
-        environment_constructor("Ruins", 1, 2, 1, 0.5, 0.5, 0.5, "Earthquake", 10, 17)
+        environment_constructor("Salt Flats", 1, 0.5, 0.5, 0.8, 0.4, 0.1, "Drought", 15, 25),
+        environment_constructor("Wasteland", 0.5, 0.5, 1, 1, 0.8, 0, "Sandstorm", 18, 45),
+        environment_constructor("Ruins", 0.5, 1, 0.5, 0.5, 0.5, 0.5, "Earthquake", 10, 17)
     ];
 
     var environment_types = class_A.concat(class_B.concat(class_C));
+
+    function generate_resources(env) {
+        var survivors_support = Outpost.Survivors.get_alive_survivors().length + 1;
+        var water_amount = survivors_support * 1.75 * Helper.randomInt(3) + 4;
+        water_amount *= env.water_mod;
+        env.env_water = water_amount;
+        var food_amount = survivors_support * 2.75 * Helper.randomInt(3) + 4;
+        food_amount *= env.food_mod;
+        env.env_food = food_amount;
+        return env;
+    }
 
     return {
         generate_environment : function(difficulty) {
@@ -191,11 +208,11 @@ Environment.Types = (function () {
             }
             var random_int = Math.random() * 0.3;
             if(random_int < class_A_chance) {
-                return Helper.get_random(class_A);
+                return generate_resources(Helper.get_random(class_A));
             } else if (random_int < class_B_chance) {
-                return Helper.get_random(class_B);
+                return generate_resources(Helper.get_random(class_B));
             } else if (random_int <= class_C_chance) {
-                return Helper.get_random(class_C);
+                return generate_resources(Helper.get_random(class_C));
             }
         }
     }

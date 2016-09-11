@@ -27,6 +27,9 @@ Outpost.Survivors = (function() {
         },
         get_all_survivors : function() {
             return all;
+        },
+        get_alive_survivors : function() {
+            return alive;
         }
     };
 }());

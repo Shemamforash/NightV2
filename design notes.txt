@@ -250,14 +250,20 @@ DESIGN:
             25% chance environment from class A 12.5% chance environment from class B
             generate random number and select environment based on this value
         types;
-            wasteland
+            CLASS A
             mountains
-            ravines
-            abandoned
             oasis
-            marsh
-            heath
+
+            CLASS B
+            oil sands
+            ravines
             prairie
+            scrublands
+
+            CLASS C
+            salt flats
+            wasteland
+            ruins
 
     weather:
         weathers are categorised by temperature (hot, med, cold), and conditions (wet, dry, storm)
@@ -271,13 +277,79 @@ DESIGN:
         weather rating dictates the distribution of wet and dry weather in an environment
         severity rating dictates the types of weather in the environment
         types;
-            drizzle
-            rainy
+            HOT
             clear
             cloudy
-            thunderstorm
-            foggy
+            overcast
+            dry storm
             sandstorm
-            floods
+            drought
+            wildfire
+
+            COLD
+            drizzle
+            rain
+            foggy
+            wet storm
             frost
+            floods
+            icestorm
+
+            OTHER
+            breezy
+            windy
+            hurricane
+            earthquakes
+
+
+dialogue/lore:
+    Weather:
+        Clear -
+            The sun burns above
+            The earth sears
+        Cloudy -
+            The sun retreats
+            The sun tempers it's anger
+            Clouds plume overhead
+        Overcast -
+            The sky is grim
+        Dry Storm -
+            The gods spark with jest
+            Clouds brim with dry lightning
+        Sandstorm -
+            Sand scours the earth
+            Pores choke with sand
+        Drought -
+            The earth cracks with thirst
+            Dry throats moan for relief
+            Muscles crack and bones creak
+        Wildfire -
+            Fire pours from the earth
+            All is choked with ash and fire
+            Nature wreaks it's petty vengeance
+    Environment:
+        Wasteland-
+            engines thunder in the distance.
+            ancient roads make their weary path ahead.
+            dead dunes roll endlessly in the pallor.
+        Salt Flats-
+            rigs of war lie like titans around us.
+            acrid crystals crack and break beneath weary feet.
+        Ruins-
+            the bones of civilisation rot in the sand.
+            the pomp? of man returns to the dust.
+        Oil Sands-
+            oily slicks taunt thirsty mouths.
+            nodding donkeys take their final mouthfuls.
+        Prairie-
+        Ravines-
+        Scrubland-
+
+        Mountains-
+        Oasis-
+            birds chirrup in the canopy.
+    Danger:
+    Survivor:
+    Resources:
+    Misc:
 

@@ -10,7 +10,7 @@ Helper.randomInt = function(i) {
     return Math.floor(Math.random() * i);
 };
 
-Helper.create_function_wrapper = function(n, f){
+Helper.wrap = function(n, f){
     return {
         function_name: n,
         execute: f

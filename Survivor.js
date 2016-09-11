@@ -24,6 +24,10 @@ Survivor.get_empty_survivor = function () {
         starvation_tolerance: 0,
         dehydration: 0,
         starvation: 0,
+        required_water: 0,
+        required_food: 0,
+        skill_modifier: 1,
+
         water_find: 0,
         food_find: 0,
         fuel_find: 0,
@@ -35,28 +39,34 @@ Survivor.get_empty_survivor = function () {
         actions: [],
         preferred: false,
 
-        get_required_water: function () {
+        calculate_required_water : function () {
             var temperature = Environment.Current.get_temperature();
             if (temperature > this.preferred_temperature) {
                 var delta_temp = temperature - this.preferred_temperature;
                 var temp_mod = 1 + delta_temp / 50;
-                return this.thirst / 12 * temp_mod;
+                this.required_water =  this.thirst / 12 * temp_mod;
             }
-            return 1;
+            this.required_water = 1;
         },
-        get_required_food: function () {
+        calculate_required_food : function () {
             var temperature = Environment.Current.get_temperature();
             if (temperature < this.preferred_temperature) {
                 var x_component = 7 - (20 - temperature) / 5;
                 var pow = Math.pow(x_component, 2);
-                return 1 + 1 / pow;
+                this.required_water = 1 + 1 / pow;
             }
-            return 1;
+            this.required_food = 1;
         },
         get_strength: function () {
             return (this.strength / this.starvation_tolerance) * (this.starvation_tolerance - this.starvation);
         },
-        get_skill_modifier : function() {
+        receive_hour : function() {
+            this.calculate_skill_modifier();
+            this.calculate_required_food();
+            this.calculate_required_water();
+            this.consume_water();
+        },
+        calculate_skill_modifier : function() {
             var temperature = Environment.Current.get_temperature();
             var x_component = temperature - this.preferred_temperature;
             var pow = Math.pow(x_component, 2);
@@ -64,16 +74,16 @@ Survivor.get_empty_survivor = function () {
             if(temperature < this.preferred_temperature){
                 coefficient = -0.0006;
             }
-            return coefficient * pow + 1;
+            this.skill_modifier = coefficient * pow + 1;
         },
         get_fuel_skill : function() {
-            return this.get_skill_modifier() * this.fuel_find;
+            return this.skill_modifier * this.fuel_find;
         },
         get_water_skill : function() {
-            return this.get_skill_modifier() * this.water_find;
+            return this.skill_modifier * this.water_find;
         },
         get_food_skill : function() {
-            return this.get_skill_modifier() * this.food_find;
+            return this.skill_modifier * this.food_find;
         },
         set_preferred: function (b) {
             this.preferred = b;
@@ -82,7 +92,7 @@ Survivor.get_empty_survivor = function () {
             return this.preferred;
         },
         consume_water : function(water_amount) {
-            var delta_water = water_amount - this.get_required_water();
+            var delta_water = water_amount - this.required_water;
             this.dehydration -= delta_water;
             var remaining = 0;
             if(this.dehydration < 0){
@@ -213,5 +223,41 @@ Survivor.GenerationFunctions = {
         s.food_find = rand;
         s.fuel_find = total_points;
     }
-
 };
+
+Survivor.Traits = (function() {
+    var traits = [
+        Helper.wrap("Hunter", function(s) {
+            s.food_find += 20;
+            if(s.food_find > 100){
+                s.food_find = 100;
+            }
+        }),
+        Helper.wrap("Diviner", function(s) {
+            s.water_find += 20;
+            if(s.water_find > 100){
+                s.water_find = 100;
+            }
+        }),
+        Helper.wrap("Fractionator", function(s) {
+            s.fuel_find += 20;
+            if(s.fuel_find > 100){
+                s.fuel_find = 100;
+            }
+        })
+    ];
+
+    return {
+        get_traits : function() {
+            var first = Helper.get_random(traits);
+            var second = null;
+            while(second !== first) {
+                second = Helper.get_random(traits);
+            }
+            return {
+                trait_a: first,
+                trait_b: second
+            }
+        }
+    };
+}());
