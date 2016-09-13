@@ -353,3 +353,23 @@ dialogue/lore:
     Resources:
     Misc:
 
+the pilgrim "holy driver"
+    unknown age, gender, true name
+    multiple attestations to origin
+        - bereaving soldier
+        - faithless priest
+        - the last mechanic
+    one of the few remaining people who can maintain and drive a car
+    seeking the home they left behind years ago, even knowing it cannot be as it was
+    followed by others seeking the same thing, even if it means death
+    acts as a beacon for the redemption of man
+
+the world
+    wwII continued for hundreds of years
+    technology peaked and fell as the world economies crumbled from prolonged war
+    massive ecological devastation- nuclear war, deforestation, desertification
+    almost all oil gone
+    technology scattered around world, barely anyone knows how to use it
+    war descended into civil war and then local chaos
+    the remaining people live in tribes, warbands, or just wanderers
+    almost everyone knows about the pilgrim

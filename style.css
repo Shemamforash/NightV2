@@ -216,6 +216,7 @@ body {
 /*lower section*/
 #lower {
     height: 50%;
+    float: left;
 }
 
 #table_headers {
@@ -241,6 +242,7 @@ body {
     display: inline-block;
     height: 40px;
     width: 96%;
+    float: left;
     padding-left: 2%;
     padding-right: 2%;
 }

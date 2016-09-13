@@ -17,6 +17,10 @@ Helper.wrap = function(n, f){
     }
 };
 
+Helper.to_sf = function(n, p) {
+  return Math.round(n * p * 10);
+};
+
 Helper.shuffle = function(a) {
     var j, x, i;
     for (i = a.length; i; i--) {

@@ -32,7 +32,7 @@ Survivor.get_empty_survivor = function () {
         food_find: 0,
         fuel_find: 0,
         fuel_requirements: 0,
-        preferred_temperature: -240,
+        preferred_temperature: 21,
         preferred_environments: [],
         trait_a: {},
         trait_b: {},
@@ -45,17 +45,23 @@ Survivor.get_empty_survivor = function () {
                 var delta_temp = temperature - this.preferred_temperature;
                 var temp_mod = 1 + delta_temp / 50;
                 this.required_water =  this.thirst / 12 * temp_mod;
+                console.log(this.required_water);
+            } else {
+                this.required_water = this.thirst / 12;
             }
-            this.required_water = 1;
+            this.required_water = Math.floor(this.required_water * 1000);
         },
         calculate_required_food : function () {
             var temperature = Environment.Current.get_temperature();
             if (temperature < this.preferred_temperature) {
                 var x_component = 7 - (20 - temperature) / 5;
                 var pow = Math.pow(x_component, 2);
-                this.required_water = 1 + 1 / pow;
+                var temp_mod = 1 + 1 / pow;
+                this.required_food = this.hunger / 12 * temp_mod;
+            } else {
+                this.required_food = this.hunger / 12;
             }
-            this.required_food = 1;
+            this.required_food = Math.floor(this.required_food * 1000);
         },
         get_strength: function () {
             return (this.strength / this.starvation_tolerance) * (this.starvation_tolerance - this.starvation);
@@ -120,6 +126,8 @@ Survivor.generate_survivor = function () {
     new_survivor.dehydration_tolerance = Survivor.GenerationFunctions.calculate_dehydration_tolerance(new_survivor);
     new_survivor.starvation_tolerance = Survivor.GenerationFunctions.calculate_starvation_tolerance(new_survivor);
     Survivor.GenerationFunctions.calculate_skills(new_survivor);
+
+    return new_survivor;
 };
 
 Survivor.GenerationFunctions = {
@@ -131,7 +139,7 @@ Survivor.GenerationFunctions = {
         //todo this should be more efficient
 
         var first_name = (s.gender === "Male") ? (Helper.get_random(male_names)) : (Helper.get_random(female_names));
-        var surname = surnames[helper.randomInt(surnames.length)];
+        var surname = surnames[Helper.randomInt(surnames.length)];
         var full_name = first_name + " " + surname;
         for(var s in Outpost.Survivors.get_all_survivors()) {
             if(s.survivor_name === full_name) {

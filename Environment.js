@@ -65,7 +65,6 @@ Environment.Weather = (function () {
             receive_hour : function() {
                 Environment.Current.get_environment().env_water += this.water_mod / 12;
                 Environment.Current.get_environment().env_food += this.food_mod / 12;
-                console.log(Environment.Current.get_environment().env_water);
             }
         }
     }
@@ -120,7 +119,6 @@ Environment.Weather = (function () {
     return {
         generate_weather : function(environment) {
             var misc_or_susceptible_chance = Math.random();
-            console.log(environment.env_condition);
             if(misc_or_susceptible_chance < 0.2 && environment.susceptible_weather !== null) {
                 //20% chance to select susceptible weather
                 return get_weather_by_name(environment.susceptible_weather);
@@ -180,10 +178,10 @@ Environment.Types = (function () {
     function generate_resources(env) {
         var survivors_support = Outpost.Survivors.get_alive_survivors().length + 1;
         var water_amount = survivors_support * 1.75 * Helper.randomInt(3) + 4;
-        water_amount *= env.water_mod;
+        water_amount *= env.env_water;
         env.env_water = water_amount;
         var food_amount = survivors_support * 2.75 * Helper.randomInt(3) + 4;
-        food_amount *= env.food_mod;
+        food_amount *= env.env_food;
         env.env_food = food_amount;
         return env;
     }

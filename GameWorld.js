@@ -9,16 +9,16 @@ var World = {};
 
 var Listener = {};
 
-Listener.Update = (function() {
+Listener.Update = (function () {
     var listeners = [];
     return {
-        add_listener : function(s) {
+        add_listener: function (s) {
             listeners.push(s);
         },
-        remove_listener : function(s){
+        remove_listener: function (s) {
             listeners.remove(s);
         },
-        update_listeners : function() {
+        update_listeners: function () {
             for (var i = 0; i < listeners.length; ++i) {
                 listeners[i].receive_hour();
             }
@@ -27,11 +27,12 @@ Listener.Update = (function() {
 }());
 
 Listener.Proto = {
-    receive_hour: function () {}
+    receive_hour: function () {
+    }
 };
 
-Listener.LinkToObject = function(s){
-    s.prototype = new Listener.Proto();
+Listener.LinkToObject = function (s) {
+    s.prototype = Listener.Proto;
     Listener.Update.add_listener(s);
 };
 
@@ -45,8 +46,11 @@ World.Time = (function () {
     var hour_length_millis = 1000;
 
     function advance_hour() {
-        time == 18 ? end_day() : time += 1;
+        time == 18 ? UI.Menus.end_day() : time += 1;
         Listener.Update.update_listeners();
+        if (Math.random > 0.05) {
+            Outpost.Survivors.add_survivor();
+        }
     }
 
     function advance_day() {
@@ -66,7 +70,15 @@ World.Time = (function () {
                 advance_hour();
             }
         }
-        update_UI();
+        UI.Update.update_UI();
+    }
+
+    function make_trip() {
+        Outpost.Status.make_trip();
+        if (Math.random > 0.4) {
+            Outpost.Survivors.add_survivor();
+        }
+        advance_day();
     }
 
     function new_game() {
@@ -99,7 +111,7 @@ World.Time = (function () {
             advance_day();
         },
         make_trip: function () {
-            new_game(); //probably should rename this...
+            make_trip(); //probably should rename this...
         }
     }
 }());
