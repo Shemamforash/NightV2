@@ -7,35 +7,6 @@
  */
 var World = {};
 
-var Listener = {};
-
-Listener.Update = (function () {
-    var listeners = [];
-    return {
-        add_listener: function (s) {
-            listeners.push(s);
-        },
-        remove_listener: function (s) {
-            listeners.remove(s);
-        },
-        update_listeners: function () {
-            for (var i = 0; i < listeners.length; ++i) {
-                listeners[i].receive_hour();
-            }
-        }
-    }
-}());
-
-Listener.Proto = {
-    receive_hour: function () {
-    }
-};
-
-Listener.LinkToObject = function (s) {
-    s.prototype = Listener.Proto;
-    Listener.Update.add_listener(s);
-};
-
 World.Time = (function () {
     var time = 6;
     var day = 0;
@@ -43,11 +14,12 @@ World.Time = (function () {
     var total_time = 0;
     var paused = true;
     var hour_counter = 0;
-    var hour_length_millis = 1000;
+    var hour_length_millis = 10000;
+    var hour_listener = Helper.Listener_Builder.get_new_listener();
 
     function advance_hour() {
         time == 18 ? UI.Menus.end_day() : time += 1;
-        Listener.Update.update_listeners();
+        hour_listener.update_listeners();
         if (Math.random > 0.05) {
             Outpost.Survivors.add_survivor();
         }
@@ -97,7 +69,7 @@ World.Time = (function () {
         pause: function () {
             paused = true;
         },
-        unpause: function () {
+        un_pause: function () {
             paused = false;
         },
         start_loop: function () {
@@ -112,6 +84,7 @@ World.Time = (function () {
         },
         make_trip: function () {
             make_trip(); //probably should rename this...
-        }
+        },
+        hour_listener: hour_listener
     }
 }());

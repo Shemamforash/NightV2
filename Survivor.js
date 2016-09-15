@@ -6,6 +6,39 @@
  */
 var Survivor = {};
 
+//Edit as necessary
+Survivor.Pilgrim = {
+    survivor_name: "The Pilgrim",
+    background: "The Holy Driver, wandering an empty path on an empty plain.",
+
+    age: "??",
+    ideal_age: 24,
+    age_modifier: 1,
+    gender: "??",
+    strength: 100,
+    weight: "??",
+    ideal_weight: "??",
+    thirst: 2.5,
+    hunger: 2,
+    dehydration_tolerance: 10,
+    starvation_tolerance: 12,
+    dehydration: 0,
+    starvation: 0,
+    required_water: 0,
+    required_food: 0,
+    skill_modifier: 1,
+
+    water_find: 60,
+    food_find: 60,
+    fuel_find: 60,
+    fuel_requirements: 20,
+    preferred_temperature: 21,
+    preferred_environments: [],
+    trait_a: {},
+    trait_b: {},
+    actions: [],
+};
+
 Survivor.get_empty_survivor = function () {
     return {
         survivor_name: "none",
@@ -39,19 +72,17 @@ Survivor.get_empty_survivor = function () {
         actions: [],
         preferred: false,
 
-        calculate_required_water : function () {
+        calculate_required_water: function () {
             var temperature = Environment.Current.get_temperature();
             if (temperature > this.preferred_temperature) {
                 var delta_temp = temperature - this.preferred_temperature;
                 var temp_mod = 1 + delta_temp / 50;
-                this.required_water =  this.thirst / 12 * temp_mod;
-                console.log(this.required_water);
+                this.required_water = this.thirst / 12 * temp_mod;
             } else {
                 this.required_water = this.thirst / 12;
             }
-            this.required_water = Math.floor(this.required_water * 1000);
         },
-        calculate_required_food : function () {
+        calculate_required_food: function () {
             var temperature = Environment.Current.get_temperature();
             if (temperature < this.preferred_temperature) {
                 var x_component = 7 - (20 - temperature) / 5;
@@ -61,47 +92,50 @@ Survivor.get_empty_survivor = function () {
             } else {
                 this.required_food = this.hunger / 12;
             }
-            this.required_food = Math.floor(this.required_food * 1000);
         },
         get_strength: function () {
             return (this.strength / this.starvation_tolerance) * (this.starvation_tolerance - this.starvation);
         },
-        receive_hour : function() {
+        update_listener: function () {
             this.calculate_skill_modifier();
             this.calculate_required_food();
             this.calculate_required_water();
-            this.consume_water();
+            this.consume_water(100); //todo don't use a magic number
         },
-        calculate_skill_modifier : function() {
+        calculate_skill_modifier: function () {
             var temperature = Environment.Current.get_temperature();
             var x_component = temperature - this.preferred_temperature;
             var pow = Math.pow(x_component, 2);
             var coefficient = -0.001;
-            if(temperature < this.preferred_temperature){
+            if (temperature < this.preferred_temperature) {
                 coefficient = -0.0006;
             }
             this.skill_modifier = coefficient * pow + 1;
         },
-        get_fuel_skill : function() {
+        get_fuel_skill: function () {
             return this.skill_modifier * this.fuel_find;
         },
-        get_water_skill : function() {
+        get_water_skill: function () {
             return this.skill_modifier * this.water_find;
         },
-        get_food_skill : function() {
+        get_food_skill: function () {
             return this.skill_modifier * this.food_find;
         },
         set_preferred: function (b) {
             this.preferred = b;
         },
-        get_preferred : function() {
+        get_preferred: function () {
             return this.preferred;
         },
-        consume_water : function(water_amount) {
+        consume_water: function (water_amount) {
+            if (this.dehydration >= this.dehydration_tolerance) {
+                Outpost.Survivors.kill_survivor(this);
+                return water_amount;
+            }
             var delta_water = water_amount - this.required_water;
             this.dehydration -= delta_water;
             var remaining = 0;
-            if(this.dehydration < 0){
+            if (this.dehydration < 0) {
                 remaining = -this.dehydration;
                 this.dehydration = 0;
             }
@@ -112,7 +146,7 @@ Survivor.get_empty_survivor = function () {
 
 Survivor.generate_survivor = function () {
     var new_survivor = Survivor.get_empty_survivor();
-    Listener.LinkToObject(new_survivor);
+    World.Time.hour_listener.add_listener(new_survivor);
 
     new_survivor.survivor_name = Survivor.GenerationFunctions.create_name(new_survivor);
     new_survivor.age = Survivor.GenerationFunctions.calculate_age();
@@ -125,13 +159,14 @@ Survivor.generate_survivor = function () {
     new_survivor.hunger = Survivor.GenerationFunctions.calculate_hunger(new_survivor);
     new_survivor.dehydration_tolerance = Survivor.GenerationFunctions.calculate_dehydration_tolerance(new_survivor);
     new_survivor.starvation_tolerance = Survivor.GenerationFunctions.calculate_starvation_tolerance(new_survivor);
+    new_survivor.actions = Survivor.Actions.get_generic_actions(new_survivor);
     Survivor.GenerationFunctions.calculate_skills(new_survivor);
 
     return new_survivor;
 };
 
 Survivor.GenerationFunctions = {
-    create_name : function(s) {
+    create_name: function (s) {
         var female_names = ["Alette", "Temika", "Jeri", "Melinda", "Marcia", "Corine", "Heike", "Krishna", "Letitia", "Naomi", "Yasuko", "Karie", "Grazyna", "Ethelene", "Audry", "Melda", "Katherine", "Nell"];
         var male_names = ["Hai", "Riley", "Kristoff", "Angbard", "Rob", "Alvaro", "James", "Abel", "Stephen", "Mikki", "Alexander", "Paolo", "Vladimir", "Harald", "Max", "Michael", "Emory", "Byron", "Daniel"];
         var surnames = ["Copeland", "Delgado", "Hess", "Horton", "Garrett", "Freysson", "Yang", "Blackeye", "Longscab", "Redhand", "Deepdweller", "Sungazer", "Bottomeater", "Eaton", "Koch", "Diaz", "O'connoll", "Divider"];
@@ -141,8 +176,8 @@ Survivor.GenerationFunctions = {
         var first_name = (s.gender === "Male") ? (Helper.get_random(male_names)) : (Helper.get_random(female_names));
         var surname = surnames[Helper.randomInt(surnames.length)];
         var full_name = first_name + " " + surname;
-        for(var s in Outpost.Survivors.get_all_survivors()) {
-            if(s.survivor_name === full_name) {
+        for (var s in Outpost.Survivors.get_all_survivors()) {
+            if (s.survivor_name === full_name) {
                 return Survivor.GenerationFunctions.create_name(s);
             }
         }
@@ -214,14 +249,14 @@ Survivor.GenerationFunctions = {
     calculate_dehydration_tolerance: function (s) {
         var age_tolerance = s.age_modifier * s.thirst * 2;
         var weight_tolerance = -2 * (s.ideal_weight - s.weight) / 12;
-        return age_tolerance + weight_tolerance;
+        return 1000 * (age_tolerance + weight_tolerance);
     },
     calculate_starvation_tolerance: function (s) {
         var age_tolerance = s.age_modifier * 4;
         var weight_tolerance = (s.ideal_weight - s.weight) / 5;
-        return age_tolerance + weight_tolerance;
+        return 1000 * (age_tolerance + weight_tolerance);
     },
-    calculate_skills : function(s) {
+    calculate_skills: function (s) {
         var total_points = 150;
         var rand = Helper.randomInt((total_points > 100) ? 100 : total_points);
         total_points -= rand;
@@ -233,33 +268,79 @@ Survivor.GenerationFunctions = {
     }
 };
 
-Survivor.Traits = (function() {
+Survivor.Actions = (function () {
+    function create_action(name, f, d, s) {
+        var wrapped = Helper.wrap(name, f);
+        wrapped.duration = d;
+        wrapped.counter = 0;
+        wrapped.active = false;
+        wrapped.update_listener = function () {
+            if (this.active) {
+                this.counter += 1;
+                if (this.counter === this.duration) {
+                    this.counter = 0;
+                    wrapped.active = false;
+                    wrapped.execute();
+                    UI.Dynamic.reset_actions(s);
+                }
+            }
+        };
+        wrapped.activate = function () {
+            wrapped.active = true;
+        };
+        World.Time.hour_listener.add_listener(wrapped);
+        return wrapped;
+    }
+
+    var find_water_constructor = function (s) {
+        return create_action("Find water", function () {
+            Environment.Resources.gather_water(s);
+        }, 1, s);
+    };
+
+    return {
+        get_generic_actions: function (s) {
+            return [
+                find_water_constructor(s)
+            ];
+        },
+        find_and_activate: function (s, n) {
+            for (var i = 0; i < s.actions.length; ++i) {
+                if (s.actions[i].function_name === n) {
+                    s.actions[i].activate();
+                }
+            }
+        }
+    }
+}());
+
+Survivor.Traits = (function () {
     var traits = [
-        Helper.wrap("Hunter", function(s) {
+        Helper.wrap("Hunter", function (s) {
             s.food_find += 20;
-            if(s.food_find > 100){
+            if (s.food_find > 100) {
                 s.food_find = 100;
             }
         }),
-        Helper.wrap("Diviner", function(s) {
+        Helper.wrap("Diviner", function (s) {
             s.water_find += 20;
-            if(s.water_find > 100){
+            if (s.water_find > 100) {
                 s.water_find = 100;
             }
         }),
-        Helper.wrap("Fractionator", function(s) {
+        Helper.wrap("Fractionator", function (s) {
             s.fuel_find += 20;
-            if(s.fuel_find > 100){
+            if (s.fuel_find > 100) {
                 s.fuel_find = 100;
             }
         })
     ];
 
     return {
-        get_traits : function() {
+        get_traits: function () {
             var first = Helper.get_random(traits);
             var second = null;
-            while(second !== first) {
+            while (second !== first) {
                 second = Helper.get_random(traits);
             }
             return {

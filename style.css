@@ -200,7 +200,7 @@ body {
 /*environment and outpost information*/
 
 #mid_world {
-    height: 30%;
+    height: 20%;
 }
 
 .world_info {
@@ -208,9 +208,9 @@ body {
 }
 
 .world_info > .centre_text {
-    /*font-size: 12px;*/
-    /*line-height: 12px;*/
-    /*height: 12px;*/
+    font-size: 24px;
+    line-height: 24px;
+    height: 24px;
 }
 
 /*lower section*/
@@ -221,7 +221,7 @@ body {
 
 #table_headers {
     width: 96%;
-    height: 60px;
+    height: 50px;
     padding-left: 2%;
     padding-right: 2%;
 }

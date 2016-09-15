@@ -10,7 +10,7 @@
 
 var Environment = {};
 
-Environment.Current = (function() {
+Environment.Current = (function () {
     var current_environment, current_weather;
     var temperature_range = [];
 
@@ -18,7 +18,7 @@ Environment.Current = (function() {
         temperature_range = [];
         var temperature_val;
         var min_max_diff;
-        for(var i = 0; i < 13; ++i){
+        for (var i = 0; i < 13; ++i) {
             //equation for temperature is (max_temp - min_temp)*sin(c * x) + min_temp
             //increase i coefficient for an earlier peak temperature
             temperature_val = Math.sin(i * 0.21);
@@ -31,23 +31,24 @@ Environment.Current = (function() {
 
     return {
         //if trip is made to new environment
-        change_environment : function(difficulty) {
+        change_environment: function (difficulty) {
             current_environment = Environment.Types.generate_environment(difficulty);
             Environment.Current.change_weather();
         },
         //when day changes
-        change_weather : function() {
+        change_weather: function () {
+            World.Time.hour_listener.remove_listener(current_weather);
             current_weather = Environment.Weather.generate_weather(current_environment);
-            Listener.LinkToObject(current_weather);
+            World.Time.hour_listener.add_listener(current_weather);
             calculate_temperatures();
         },
-        get_environment : function() {
+        get_environment: function () {
             return current_environment;
         },
-        get_weather : function() {
+        get_weather: function () {
             return current_weather;
         },
-        get_temperature : function() {
+        get_temperature: function () {
             return temperature_range[World.Time.get_date_and_time().time - 6];
         }
     }
@@ -62,9 +63,9 @@ Environment.Weather = (function () {
             temperature_mod: temperature_mod,
             weather_danger: weather_danger,
             weather_severity: weather_severity,
-            receive_hour : function() {
-                Environment.Current.get_environment().env_water += this.water_mod / 12;
-                Environment.Current.get_environment().env_food += this.food_mod / 12;
+            update_listener: function () {
+                Environment.Current.get_environment().resources.water.add(this.water_mod / 12);
+                Environment.Current.get_environment().resources.food.add(this.food_mod / 12);
             }
         }
     }
@@ -74,7 +75,7 @@ Environment.Weather = (function () {
         weather_constructor("Clouds", 1, 0, 5, 0, 0.2),
         weather_constructor("Overcast", 2, 0, 0, 0, 0.3),
         weather_constructor("Dry storm", -1, -2, 5, 2, 0.5),
-        weather_constructor("Sandstorm", -1 -2, 10, 2, 0.8),
+        weather_constructor("Sandstorm", -1 - 2, 10, 2, 0.8),
         weather_constructor("Drought", -2, -2, 15, 0, 0.9),
         weather_constructor("Wildfire", -3, -4, 20, 3, 1)
     ];
@@ -99,8 +100,8 @@ Environment.Weather = (function () {
     function get_weather_around_severity(arr, severity) {
         var available_weather = [];
         var lower_bound = severity - 0.4, upper_bound = severity + 0.4;
-        for(var i = 0; i < arr.length; ++i){
-            if(arr[i].weather_severity >= lower_bound && arr[i].weather_severity <= upper_bound) {
+        for (var i = 0; i < arr.length; ++i) {
+            if (arr[i].weather_severity >= lower_bound && arr[i].weather_severity <= upper_bound) {
                 available_weather.push(arr[i]);
             }
         }
@@ -108,8 +109,8 @@ Environment.Weather = (function () {
     }
 
     function get_weather_by_name(name) {
-        for(var i = 0; i < all_weather.length; ++i) {
-            if(all_weather[i].weather_name === name){
+        for (var i = 0; i < all_weather.length; ++i) {
+            if (all_weather[i].weather_name === name) {
                 return all_weather[i];
             }
         }
@@ -117,12 +118,12 @@ Environment.Weather = (function () {
     }
 
     return {
-        generate_weather : function(environment) {
+        generate_weather: function (environment) {
             var misc_or_susceptible_chance = Math.random();
-            if(misc_or_susceptible_chance < 0.2 && environment.susceptible_weather !== null) {
+            if (misc_or_susceptible_chance < 0.2 && environment.susceptible_weather !== null) {
                 //20% chance to select susceptible weather
                 return get_weather_by_name(environment.susceptible_weather);
-            } else if(misc_or_susceptible_chance < 0.1) {
+            } else if (misc_or_susceptible_chance < 0.1) {
                 //10% chance to select misc weather
                 return get_weather_around_severity(misc_weather, 0.2);
             } else if (Math.random() > environment.env_condition) {
@@ -136,6 +137,47 @@ Environment.Weather = (function () {
     }
 }());
 
+Environment.Resources = (function () {
+    function get_amount(strength, remaining, range_min, range_max) {
+        var found = Math.random() * (range_max - range_min) + range_min;
+        if (found > remaining) {
+            found = remaining;
+        }
+        if (found > strength) {
+            found = strength;
+        }
+        return found;
+    }
+
+    function update_water_in_world(quantity_found, from) {
+        Environment.Current.get_environment().resources.water.remove(quantity_found);
+        Outpost.Resources.water.add(quantity_found);
+        UI.Update.post_event("Found " + Helper.convert_to_ml(quantity_found) + " water in a " + from);
+    }
+
+    return {
+        gather_water: function (s) {
+            var env = Environment.Current.get_environment();
+            var quantity_found = (Math.random() + (s.water_find / 100)) / 2;
+            var from;
+            if (quantity_found < 0.1 && env.resources.water.remaining() > 6) {
+                quantity_found = get_amount(s.strength, env.resources.water.remaining(), 6, 10);
+                from = "stream";
+            } else if (quantity_found < 0.3 && env.resources.water.remaining() > 3) {
+                quantity_found = get_amount(s.strength, env.resources.water.remaining(), 3, 6);
+                from = "pool";
+            } else if (quantity_found < 0.6 && env.resources.water.remaining() > 1) {
+                quantity_found = get_amount(s.strength, env.resources.water.remaining(), 1, 3);
+                from = "trickle";
+            } else {
+                quantity_found = get_amount(s.strength, env.resources.water.remaining(), 0, 1);
+                from = "puddle";
+            }
+            update_water_in_world(quantity_found, from);
+        }
+    };
+}());
+
 Environment.Types = (function () {
     function environment_constructor(name, fuel, water, food, condition, dry_severity, wet_severity, weather, min_temp, max_temp) {
         return {
@@ -143,6 +185,7 @@ Environment.Types = (function () {
             env_fuel: fuel,
             env_water: water,
             env_food: food,
+            resources: Helper.get_new_resources(),
             env_condition: condition,
             dry_severity: dry_severity,
             wet_severity: wet_severity,
@@ -173,27 +216,25 @@ Environment.Types = (function () {
         environment_constructor("Ruins", 0.5, 1, 0.5, 0.5, 0.5, 0.5, "Earthquake", 10, 17)
     ];
 
-    var environment_types = class_A.concat(class_B.concat(class_C));
-
     function generate_resources(env) {
         var survivors_support = Outpost.Survivors.get_alive_survivors().length + 1;
         var water_amount = survivors_support * 1.75 * Helper.randomInt(3) + 4;
         water_amount *= env.env_water;
-        env.env_water = water_amount;
+        env.resources.water.add(water_amount);
         var food_amount = survivors_support * 2.75 * Helper.randomInt(3) + 4;
         food_amount *= env.env_food;
-        env.env_food = food_amount;
+        env.resources.food.add(food_amount);
         return env;
     }
 
     return {
-        generate_environment : function(difficulty) {
+        generate_environment: function (difficulty) {
             var lower_bound = difficulty - 0.15;
             var upper_bound = difficulty + 0.15;
             var class_A_chance = 0, class_B_chance = 0, class_C_chance = 0;
-            if(upper_bound < 0.3) {
+            if (upper_bound < 0.3) {
                 class_A_chance = 0.3;
-            } else if(lower_bound < 0.3 && upper_bound > 0.3) {
+            } else if (lower_bound < 0.3 && upper_bound > 0.3) {
                 class_A_chance = 0.3 - lower_bound;
                 class_B_chance = 0.3;
             } else if (upper_bound < 0.75 && lower_bound > 0.3) {
@@ -205,7 +246,7 @@ Environment.Types = (function () {
                 class_C_chance = 0.3;
             }
             var random_int = Math.random() * 0.3;
-            if(random_int < class_A_chance) {
+            if (random_int < class_A_chance) {
                 return generate_resources(Helper.get_random(class_A));
             } else if (random_int < class_B_chance) {
                 return generate_resources(Helper.get_random(class_B));
