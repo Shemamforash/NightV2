@@ -8,7 +8,7 @@ function start() {
     UI.Menus.cache_selectors();
     UI.Update.cache_selectors();
     UI.Update.add_click_events();
-    World.Time.start_loop();
+    World.Time.start();
 }
 
 var UI = {};
@@ -29,11 +29,12 @@ UI.Update = (function () {
     var event_four_label;
 
     return {
-        change_text: function (element, text) {
-            element.children(".centre_text").text(text);
-        },
-        get_text: function (element, text) {
-            return element.children(".centre_text").text();
+        text: function (element, text) {
+            if(text !== undefined) {
+                element.children(".centre_text").text(text);
+            } else {
+                return element.children(".centre_text").text();
+            }
         },
         cache_selectors: function () {
             water_quantity = $("#water_label");
@@ -50,22 +51,22 @@ UI.Update = (function () {
             event_three_label = $("#event_three");
             event_four_label = $("#event_four");
         },
-        update_UI: function () {
-            UI.Update.change_text(water_quantity, Helper.convert_to_ml(Outpost.Resources.water.remaining()));
-            UI.Update.change_text(food_quantity, Helper.convert_to_kcal(Outpost.Resources.food.remaining()));
-            UI.Update.change_text(fuel_quantity, Helper.convert_to_ml(Outpost.Resources.fuel.remaining()));
+        update: function () {
+            UI.Update.text(water_quantity, Helper.to_ml(Outpost.Resources.water.remaining()));
+            UI.Update.text(food_quantity, Helper.to_kcal(Outpost.Resources.food.remaining()));
+            UI.Update.text(fuel_quantity, Helper.to_ml(Outpost.Resources.fuel.remaining()) + " / " + Helper.to_ml(Outpost.Resources.group_fuel.get()));
 
-            UI.Update.change_text(location_label, Environment.Current.get_environment().env_name);
-            UI.Update.change_text(day_number_label, "Day: " + World.Time.get_date_and_time().date + "  " + World.Time.get_date_and_time().time + ":00");
-            UI.Update.change_text(weather_label, Environment.Current.get_weather().weather_name);
-            UI.Update.change_text(temperature_label, Environment.Current.get_temperature() + "\xB0C");
-            UI.Dynamic.update_elements();
+            UI.Update.text(location_label, Environment.Current.get_environment().env_name);
+            UI.Update.text(day_number_label, "Day: " + World.Time.date_and_time().date + "  " + World.Time.date_and_time().time + ":00");
+            UI.Update.text(weather_label, Environment.Current.get_weather().weather_name);
+            UI.Update.text(temperature_label, Environment.Current.get_temperature() + "\xB0C");
+            UI.Dynamic.update();
         },
         post_event: function (event) {
-            UI.Update.change_text(event_four_label, UI.Update.get_text(event_three_label));
-            UI.Update.change_text(event_three_label, UI.Update.get_text(event_two_label));
-            UI.Update.change_text(event_two_label, UI.Update.get_text(event_one_label));
-            UI.Update.change_text(event_one_label, event);
+            UI.Update.text(event_four_label, UI.Update.text(event_three_label));
+            UI.Update.text(event_three_label, UI.Update.text(event_two_label));
+            UI.Update.text(event_two_label, UI.Update.text(event_one_label));
+            UI.Update.text(event_one_label, event);
         },
         add_click_events: function () {
             $(document).on("click", ".toggle_button", function () {
@@ -87,7 +88,7 @@ UI.Dynamic = (function () {
     var elements = [];
     var i;
 
-    function find_element(s, optional_f) {
+    function find(s, optional_f) {
         for (i = 0; i < elements.length; ++i) {
             if (elements[i].survivor === s) {
                 if (optional_f !== undefined) {
@@ -99,13 +100,19 @@ UI.Dynamic = (function () {
     }
 
     return {
-        update_elements: function () {
+        update: function () {
             for (i = 0; i < elements.length; ++i) {
-                elements[i].element.children(".food_resource").children(".centre_text").text(Helper.convert_to_kcal(elements[i].survivor.required_food));
-                elements[i].element.children(".water_resource").children(".centre_text").text(Helper.convert_to_ml(elements[i].survivor.required_water));
+                elements[i].element.children(".food_resource").children(".centre_text").text(
+                    Helper.to_kcal(elements[i].survivor.required_food) + " / " +
+                    Helper.to_kcal(elements[i].survivor.starvation)
+                );
+                elements[i].element.children(".water_resource").children(".centre_text").text(
+                    Helper.to_ml(elements[i].survivor.required_water) + " / " +
+                    Helper.to_ml(elements[i].survivor.dehydration)
+                );
             }
         },
-        add_survivor_elements: function (s) {
+        add: function (s) {
             var $div = $("<div>", {id: s.survivor_name, "class": "survivor_div"});
             $("#lower").append($div);
             $div.append("<div class=\"survivor_name\"><div class=\"centre_text\">" + s.survivor_name + "</div></div>");
@@ -123,6 +130,7 @@ UI.Dynamic = (function () {
             var $toggle_button = $("<a>", {"class": "toggle_button"});
             $toggle_button.click(function () {
                     s.set_preferred(!s.get_preferred());
+                    Outpost.Resources.group_fuel.calculate(s);
                 }
             );
             $toggle_div.append($toggle_button);
@@ -150,14 +158,14 @@ UI.Dynamic = (function () {
             }
         },
         reset_actions: function (s) {
-            find_element(s, function () {
+            find(s, function () {
                 var $dropdown = elements[i].element.children(".survivor_actions");
                 $dropdown.prop("disabled", false);
                 $dropdown.val("original");
             });
         },
-        remove_survivor_elements: function (s) {
-            find_element(s, function () {
+        remove: function (s) {
+            find(s, function () {
                     elements[i].element.remove();
                     Helper.array_remove(elements, elements[i]);
                 }

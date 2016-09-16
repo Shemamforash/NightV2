@@ -32,14 +32,14 @@ Environment.Current = (function () {
     return {
         //if trip is made to new environment
         change_environment: function (difficulty) {
-            current_environment = Environment.Types.generate_environment(difficulty);
+            current_environment = Environment.Generate(difficulty);
             Environment.Current.change_weather();
         },
         //when day changes
         change_weather: function () {
-            World.Time.hour_listener.remove_listener(current_weather);
+            World.Time.hour_listener.remove(current_weather);
             current_weather = Environment.Weather.generate_weather(current_environment);
-            World.Time.hour_listener.add_listener(current_weather);
+            World.Time.hour_listener.add(current_weather);
             calculate_temperatures();
         },
         get_environment: function () {
@@ -49,7 +49,7 @@ Environment.Current = (function () {
             return current_weather;
         },
         get_temperature: function () {
-            return temperature_range[World.Time.get_date_and_time().time - 6];
+            return temperature_range[World.Time.date_and_time().time - 6];
         }
     }
 }());
@@ -137,7 +137,7 @@ Environment.Weather = (function () {
     }
 }());
 
-Environment.Resources = (function () {
+Environment.gather_resources = (function () {
     function get_amount(strength, remaining, range_min, range_max) {
         var found = Math.random() * (range_max - range_min) + range_min;
         if (found > remaining) {
@@ -146,39 +146,86 @@ Environment.Resources = (function () {
         if (found > strength) {
             found = strength;
         }
+        if(found < 0){
+            found = 0;
+        }
         return found;
     }
 
-    function update_water_in_world(quantity_found, from) {
-        Environment.Current.get_environment().resources.water.remove(quantity_found);
-        Outpost.Resources.water.add(quantity_found);
-        UI.Update.post_event("Found " + Helper.convert_to_ml(quantity_found) + " water in a " + from);
+    function update_resource_in_world(type, env_resources, quantity, origin) {
+        switch (type) {
+            case "Water":
+                env_resources.water.remove(quantity);
+                Outpost.Resources.water.add(quantity);
+                UI.Update.post_event("Found " + Helper.to_ml(quantity) + " water in a " + origin + " world: " + env_resources.water.remaining());
+                break;
+            case "Food":
+                env_resources.food.remove(quantity);
+                Outpost.Resources.food.add(quantity);
+                UI.Update.post_event("Found " + Helper.to_kcal(quantity) + " food in a " + origin + " world: " + env_resources.food.remaining());
+                break;
+            case "Fuel":
+                env_resources.fuel.remove(quantity);
+                Outpost.Resources.fuel.add(quantity);
+                UI.Update.post_event("Found " + Helper.to_ml(quantity) + " fuel in a " + origin + " world: " + env_resources.fuel.remaining());
+                break;
+            default:
+                throw("invalid resource");
+                break;
+        }
     }
 
-    return {
-        gather_water: function (s) {
-            var env = Environment.Current.get_environment();
-            var quantity_found = (Math.random() + (s.water_find / 100)) / 2;
-            var from;
-            if (quantity_found < 0.1 && env.resources.water.remaining() > 6) {
-                quantity_found = get_amount(s.strength, env.resources.water.remaining(), 6, 10);
-                from = "stream";
-            } else if (quantity_found < 0.3 && env.resources.water.remaining() > 3) {
-                quantity_found = get_amount(s.strength, env.resources.water.remaining(), 3, 6);
-                from = "pool";
-            } else if (quantity_found < 0.6 && env.resources.water.remaining() > 1) {
-                quantity_found = get_amount(s.strength, env.resources.water.remaining(), 1, 3);
-                from = "trickle";
-            } else {
-                quantity_found = get_amount(s.strength, env.resources.water.remaining(), 0, 1);
-                from = "puddle";
-            }
-            update_water_in_world(quantity_found, from);
+    function gather_resource(find_skill, remaining, strength) {
+        var quantity_found = (Math.random() + (find_skill / 100)) / 2;
+        var from;
+        if (quantity_found < 0.1 && remaining > 6) {
+            quantity_found = get_amount(strength, remaining, 6, 10);
+            from = 3;
+        } else if (quantity_found < 0.3 && remaining > 3) {
+            quantity_found = get_amount(strength, remaining, 3, 6);
+            from = 2;
+        } else if (quantity_found < 0.6 && remaining > 1) {
+            quantity_found = get_amount(strength, remaining, 1, 3);
+            from = 1;
+        } else {
+            quantity_found = get_amount(strength, remaining, 0, 1);
+            from = 0;
         }
+        return {
+            found: quantity_found,
+            source_index: from
+        }
+    }
+
+    return function (type, s) {
+        var water_sources = ["puddle", "trickle", "pool", "stream"];
+        var food_sources = ["dried berries", "cans of food", "filled traps", "large animal"];
+        var fuel_sources = ["engine dregs", "jerry can", "ancient wreck", "oil drum"];
+        var env_resources = Environment.Current.get_environment().resources;
+        var gathered = {};
+        var from = "";
+        switch (type) {
+            case "Water":
+                gathered = gather_resource(s.water_find, env_resources.water.remaining(), s.strength);
+                from = water_sources[gathered.source_index];
+                break;
+            case "Food":
+                gathered = gather_resource(s.food_find, env_resources.food.remaining(), s.strength);
+                from = food_sources[gathered.source_index];
+                break;
+            case "Fuel":
+                gathered = gather_resource(s.fuel_find, env_resources.fuel.remaining(), s.strength);
+                from = fuel_sources[gathered.source_index];
+                break;
+            default:
+                throw("not valid");
+                break;
+        }
+        update_resource_in_world(type, env_resources, gathered.found, from);
     };
 }());
 
-Environment.Types = (function () {
+Environment.Generate = (function () {
     function environment_constructor(name, fuel, water, food, condition, dry_severity, wet_severity, weather, min_temp, max_temp) {
         return {
             env_name: name,
@@ -217,7 +264,7 @@ Environment.Types = (function () {
     ];
 
     function generate_resources(env) {
-        var survivors_support = Outpost.Survivors.get_alive_survivors().length + 1;
+        var survivors_support = Outpost.Survivors.alive().length + 1;
         var water_amount = survivors_support * 1.75 * Helper.randomInt(3) + 4;
         water_amount *= env.env_water;
         env.resources.water.add(water_amount);
@@ -227,32 +274,30 @@ Environment.Types = (function () {
         return env;
     }
 
-    return {
-        generate_environment: function (difficulty) {
-            var lower_bound = difficulty - 0.15;
-            var upper_bound = difficulty + 0.15;
-            var class_A_chance = 0, class_B_chance = 0, class_C_chance = 0;
-            if (upper_bound < 0.3) {
-                class_A_chance = 0.3;
-            } else if (lower_bound < 0.3 && upper_bound > 0.3) {
-                class_A_chance = 0.3 - lower_bound;
-                class_B_chance = 0.3;
-            } else if (upper_bound < 0.75 && lower_bound > 0.3) {
-                class_B_chance = 0.3;
-            } else if (upper_bound > 0.75 && lower_bound < 0.75) {
-                class_B_chance = 0.75 - lower_bound;
-                class_C_chance = 0.3;
-            } else {
-                class_C_chance = 0.3;
-            }
-            var random_int = Math.random() * 0.3;
-            if (random_int < class_A_chance) {
-                return generate_resources(Helper.get_random(class_A));
-            } else if (random_int < class_B_chance) {
-                return generate_resources(Helper.get_random(class_B));
-            } else if (random_int <= class_C_chance) {
-                return generate_resources(Helper.get_random(class_C));
-            }
+    return function (difficulty) {
+        var lower_bound = difficulty - 0.15;
+        var upper_bound = difficulty + 0.15;
+        var class_A_chance = 0, class_B_chance = 0, class_C_chance = 0;
+        if (upper_bound < 0.3) {
+            class_A_chance = 0.3;
+        } else if (lower_bound < 0.3 && upper_bound > 0.3) {
+            class_A_chance = 0.3 - lower_bound;
+            class_B_chance = 0.3;
+        } else if (upper_bound < 0.75 && lower_bound > 0.3) {
+            class_B_chance = 0.3;
+        } else if (upper_bound > 0.75 && lower_bound < 0.75) {
+            class_B_chance = 0.75 - lower_bound;
+            class_C_chance = 0.3;
+        } else {
+            class_C_chance = 0.3;
+        }
+        var random_int = Math.random() * 0.3;
+        if (random_int < class_A_chance) {
+            return generate_resources(Helper.get_random(class_A));
+        } else if (random_int < class_B_chance) {
+            return generate_resources(Helper.get_random(class_B));
+        } else if (random_int <= class_C_chance) {
+            return generate_resources(Helper.get_random(class_C));
         }
     }
 }());

@@ -14,24 +14,25 @@ World.Time = (function () {
     var total_time = 0;
     var paused = true;
     var hour_counter = 0;
-    var hour_length_millis = 10000;
-    var hour_listener = Helper.Listener_Builder.get_new_listener();
+    var hour_length_millis = 2000;
+    var hour_listener = Helper.Listener_Builder();
 
     function advance_hour() {
         time == 18 ? UI.Menus.end_day() : time += 1;
-        hour_listener.update_listeners();
+        hour_listener.update();
         if (Math.random > 0.05) {
-            Outpost.Survivors.add_survivor();
+            Outpost.Survivors.add();
         }
     }
 
     function advance_day() {
         Environment.Current.change_weather();
+        Outpost.Miasma.change_day();
         day += 1;
         time = 6;
     }
 
-    function update_loop() {
+    function tick() {
         var delta = Date.now() - prev_time;
         total_time += delta;
         prev_time = Date.now();
@@ -42,25 +43,27 @@ World.Time = (function () {
                 advance_hour();
             }
         }
-        UI.Update.update_UI();
+        UI.Update.update();
     }
 
     function make_trip() {
         Outpost.Status.make_trip();
+        Outpost.Miasma.make_trip();
         if (Math.random > 0.4) {
-            Outpost.Survivors.add_survivor();
+            Outpost.Survivors.add();
         }
         advance_day();
     }
 
     function new_game() {
         Outpost.Status.make_trip();
-        Outpost.Survivors.add_survivor();
+        Outpost.Survivors.add();
         advance_day();
+        hour_listener.add(Outpost.Resources.Consumer);
     }
 
     return {
-        get_date_and_time: function () {
+        date_and_time: function () {
             return {
                 date: day,
                 time: time
@@ -72,10 +75,10 @@ World.Time = (function () {
         un_pause: function () {
             paused = false;
         },
-        start_loop: function () {
+        start: function () {
             // todo load_game();
             prev_time = Date.now();
-            setInterval(update_loop, 17);
+            setInterval(tick, 17);
             new_game();
             paused = false;
         },

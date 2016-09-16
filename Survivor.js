@@ -40,6 +40,22 @@ Survivor.Pilgrim = {
 };
 
 Survivor.get_empty_survivor = function () {
+    //returns how much resource consumed
+    function consume(s, amount, debt_property, tolerance_property, required_property) {
+        if (s[debt_property] >= s[tolerance_property]) { //if they die no water consumed
+            Outpost.Survivors.kill_one(s);
+            return 0;
+        }
+        if(s[debt_property] >= amount){                 //if they have a greater debt than the water provided all water consumed
+            s[debt_property] -= amount;
+            return amount;
+        } else {
+            var remainder = s[debt_property];           //otherwise consume the debt's worth and reset the debt to 0
+            s[debt_property] = 0;
+            return remainder;
+        }
+    }
+
     return {
         survivor_name: "none",
         background: "none",
@@ -81,6 +97,7 @@ Survivor.get_empty_survivor = function () {
             } else {
                 this.required_water = this.thirst / 12;
             }
+            this.dehydration += this.required_water;
         },
         calculate_required_food: function () {
             var temperature = Environment.Current.get_temperature();
@@ -92,6 +109,7 @@ Survivor.get_empty_survivor = function () {
             } else {
                 this.required_food = this.hunger / 12;
             }
+            this.starvation += this.required_food;
         },
         get_strength: function () {
             return (this.strength / this.starvation_tolerance) * (this.starvation_tolerance - this.starvation);
@@ -100,7 +118,6 @@ Survivor.get_empty_survivor = function () {
             this.calculate_skill_modifier();
             this.calculate_required_food();
             this.calculate_required_water();
-            this.consume_water(100); //todo don't use a magic number
         },
         calculate_skill_modifier: function () {
             var temperature = Environment.Current.get_temperature();
@@ -127,26 +144,18 @@ Survivor.get_empty_survivor = function () {
         get_preferred: function () {
             return this.preferred;
         },
-        consume_water: function (water_amount) {
-            if (this.dehydration >= this.dehydration_tolerance) {
-                Outpost.Survivors.kill_survivor(this);
-                return water_amount;
-            }
-            var delta_water = water_amount - this.required_water;
-            this.dehydration -= delta_water;
-            var remaining = 0;
-            if (this.dehydration < 0) {
-                remaining = -this.dehydration;
-                this.dehydration = 0;
-            }
-            return remaining;
+        drink: function (amount) {
+            return consume(this, amount, "dehydration", "dehydration_tolerance", "required_water");
+        },
+        eat: function (amount) {
+            return consume(this, amount, "starvation", "starvation_tolerance", "required_food");
         }
     }
 };
 
 Survivor.generate_survivor = function () {
     var new_survivor = Survivor.get_empty_survivor();
-    World.Time.hour_listener.add_listener(new_survivor);
+    World.Time.hour_listener.add(new_survivor);
 
     new_survivor.survivor_name = Survivor.GenerationFunctions.create_name(new_survivor);
     new_survivor.age = Survivor.GenerationFunctions.calculate_age();
@@ -159,6 +168,7 @@ Survivor.generate_survivor = function () {
     new_survivor.hunger = Survivor.GenerationFunctions.calculate_hunger(new_survivor);
     new_survivor.dehydration_tolerance = Survivor.GenerationFunctions.calculate_dehydration_tolerance(new_survivor);
     new_survivor.starvation_tolerance = Survivor.GenerationFunctions.calculate_starvation_tolerance(new_survivor);
+    new_survivor.fuel_requirements = Survivor.GenerationFunctions.calculate_fuel_requirement(new_survivor);
     new_survivor.actions = Survivor.Actions.get_generic_actions(new_survivor);
     Survivor.GenerationFunctions.calculate_skills(new_survivor);
 
@@ -176,7 +186,7 @@ Survivor.GenerationFunctions = {
         var first_name = (s.gender === "Male") ? (Helper.get_random(male_names)) : (Helper.get_random(female_names));
         var surname = surnames[Helper.randomInt(surnames.length)];
         var full_name = first_name + " " + surname;
-        for (var s in Outpost.Survivors.get_all_survivors()) {
+        for (var s in Outpost.Survivors.all()) {
             if (s.survivor_name === full_name) {
                 return Survivor.GenerationFunctions.create_name(s);
             }
@@ -249,12 +259,15 @@ Survivor.GenerationFunctions = {
     calculate_dehydration_tolerance: function (s) {
         var age_tolerance = s.age_modifier * s.thirst * 2;
         var weight_tolerance = -2 * (s.ideal_weight - s.weight) / 12;
-        return 1000 * (age_tolerance + weight_tolerance);
+        return age_tolerance + weight_tolerance;
     },
     calculate_starvation_tolerance: function (s) {
         var age_tolerance = s.age_modifier * 4;
         var weight_tolerance = (s.ideal_weight - s.weight) / 5;
-        return 1000 * (age_tolerance + weight_tolerance);
+        return age_tolerance + weight_tolerance;
+    },
+    calculate_fuel_requirement: function (s) {
+        return Math.floor(s.weight / 10);
     },
     calculate_skills: function (s) {
         var total_points = 150;
@@ -288,20 +301,22 @@ Survivor.Actions = (function () {
         wrapped.activate = function () {
             wrapped.active = true;
         };
-        World.Time.hour_listener.add_listener(wrapped);
+        World.Time.hour_listener.add(wrapped);
         return wrapped;
     }
 
-    var find_water_constructor = function (s) {
-        return create_action("Find water", function () {
-            Environment.Resources.gather_water(s);
+    var find_action_constructor = function (s, type) {
+        return create_action("Find " + type, function () {
+            Environment.gather_resources(type, s);
         }, 1, s);
     };
 
     return {
         get_generic_actions: function (s) {
             return [
-                find_water_constructor(s)
+                find_action_constructor(s, "Water"),
+                find_action_constructor(s, "Food"),
+                find_action_constructor(s, "Fuel")
             ];
         },
         find_and_activate: function (s, n) {

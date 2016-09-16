@@ -68,12 +68,12 @@ Helper.get_new_resources = function () {
     return generate_new();
 };
 
-Helper.convert_to_kcal = function (amnt) {
+Helper.to_kcal = function (amnt) {
     return Helper.to_sf(amnt, 3) + " kcal";
 };
 
-Helper.convert_to_ml = function (amnt) {
-    if(amnt < 1) {
+Helper.to_ml = function (amnt) {
+    if (amnt < 1) {
         return Helper.to_sf(amnt, 3) + " ml";
     }
     return Helper.to_sf(amnt, 3) / 1000 + " l";
@@ -84,25 +84,23 @@ Helper.Listener_Builder = (function () {
         this.listeners = [];
     };
 
-    Listener.prototype.add_listener = function (new_listener) {
+    Listener.prototype.add = function (new_listener) {
         this.listeners.push(new_listener);
     };
 
-    Listener.prototype.remove_listener = function (listener) {
+    Listener.prototype.remove = function (listener) {
         Helper.array_remove(this.listeners, listener);
     };
 
-    Listener.prototype.update_listeners = function () {
+    Listener.prototype.update = function () {
         for (var i = 0; i < this.listeners.length; ++i) {
             // console.log(this.listeners[i]);
             this.listeners[i].update_listener();
         }
     };
 
-    return {
-        get_new_listener: function () {
-            return new Listener();
-        }
+    return function () {
+        return new Listener();
     }
 }());
 
