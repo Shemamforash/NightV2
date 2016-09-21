@@ -273,7 +273,8 @@ DESIGN:
         weather can also have an associated danger level, again the causes can vary
         weather chosen based on environmental ratings;
             weather rating from 0 to 1, 0 being dry and 1 being wet, 0.5 would be mix wet and dry weather
-            dry and wet severity rating from 0 to 1, 0 being least severe, 1 being most severe
+            ///////dry and wet severity rating from 0 to 1, 0 being least severe, 1 being most severe
+            weather severity rating based on proximity of miasma
         weather rating dictates the distribution of wet and dry weather in an environment
         severity rating dictates the types of weather in the environment
         types;
@@ -352,6 +353,12 @@ dialogue/lore:
     Survivor:
     Resources:
     Misc:
+    Story:
+        now I am home,
+        i see her clearly,
+        smiling like the day we first met,
+        though nothing remains,
+        but dust and memories.
 
 the pilgrim "holy driver"
     unknown age, gender, true name

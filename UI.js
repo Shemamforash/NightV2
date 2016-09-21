@@ -79,6 +79,9 @@ UI.Update = (function () {
             $(document).on("click", "#make_trip_button", function () {
                 UI.Menus.change_day(true)
             });
+            $(document).on("click", ".restart_game", function () {
+                UI.Menus.restart();
+            });
         }
     }
 }());
@@ -103,12 +106,12 @@ UI.Dynamic = (function () {
         update: function () {
             for (i = 0; i < elements.length; ++i) {
                 elements[i].element.children(".food_resource").children(".centre_text").text(
-                    Helper.to_kcal(elements[i].survivor.required_food) + " / " +
-                    Helper.to_kcal(elements[i].survivor.starvation)
+                    Helper.to_kcal(elements[i].survivor.required_food) + "\n" +
+                    elements[i].survivor.get_health("Food")
                 );
                 elements[i].element.children(".water_resource").children(".centre_text").text(
-                    Helper.to_ml(elements[i].survivor.required_water) + " / " +
-                    Helper.to_ml(elements[i].survivor.dehydration)
+                    Helper.to_ml(elements[i].survivor.required_water) + "\n" +
+                    elements[i].survivor.get_health("Water")
                 );
             }
         },
@@ -201,6 +204,18 @@ UI.Menus = (function () {
                 World.Time.un_pause();
                 container.css({top: "0%"});
             }
+        },
+        game_over: function() {
+            container.css({top: "-300%"});
+            World.Time.pause();
+        },
+        end_game: function() {
+            container.css({top: "-400%"});
+
+        },
+        restart: function() {
+            container.css({top: "0%"});
+            //new game, need to clear everything
         }
     };
 }());

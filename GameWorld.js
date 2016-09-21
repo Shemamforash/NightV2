@@ -14,7 +14,7 @@ World.Time = (function () {
     var total_time = 0;
     var paused = true;
     var hour_counter = 0;
-    var hour_length_millis = 2000;
+    var hour_length_millis = 10000;
     var hour_listener = Helper.Listener_Builder();
 
     function advance_hour() {

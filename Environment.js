@@ -206,15 +206,15 @@ Environment.gather_resources = (function () {
         var from = "";
         switch (type) {
             case "Water":
-                gathered = gather_resource(s.water_find, env_resources.water.remaining(), s.strength);
+                gathered = gather_resource(s.water_find, env_resources.water.remaining(), s.get_strength());
                 from = water_sources[gathered.source_index];
                 break;
             case "Food":
-                gathered = gather_resource(s.food_find, env_resources.food.remaining(), s.strength);
+                gathered = gather_resource(s.food_find, env_resources.food.remaining(), s.get_strength());
                 from = food_sources[gathered.source_index];
                 break;
             case "Fuel":
-                gathered = gather_resource(s.fuel_find, env_resources.fuel.remaining(), s.strength);
+                gathered = gather_resource(s.fuel_find, env_resources.fuel.remaining(), s.get_strength());
                 from = fuel_sources[gathered.source_index];
                 break;
             default:
@@ -265,10 +265,10 @@ Environment.Generate = (function () {
 
     function generate_resources(env) {
         var survivors_support = Outpost.Survivors.alive().length + 1;
-        var water_amount = survivors_support * 1.75 * Helper.randomInt(3) + 4;
+        var water_amount = survivors_support * 1.75 * (Helper.randomInt(3) + 4);
         water_amount *= env.env_water;
         env.resources.water.add(water_amount);
-        var food_amount = survivors_support * 2.75 * Helper.randomInt(3) + 4;
+        var food_amount = survivors_support * 2.75 * (Helper.randomInt(3) + 4);
         food_amount *= env.env_food;
         env.resources.food.add(food_amount);
         return env;

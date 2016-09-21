@@ -26,6 +26,9 @@ Outpost.Survivors = (function () {
             Helper.array_remove(alive, s);
             World.Time.hour_listener.remove(s);
             UI.Dynamic.remove(s);
+            if(alive.length === 0){
+                UI.Menus.game_over();
+            }
         },
         all: function () {
             return all;
@@ -43,7 +46,7 @@ Outpost.Survivors = (function () {
     };
 }());
 
-Outpost.Resources = Helper.get_new_resources();
+Outpost.Resources = Helper.get_new_resources($("#water_label"), $("#food_label"), $("#fuel_label"));
 Outpost.Resources.group_fuel = (function () {
     var fuel_requirement = 0;
     return {
@@ -168,6 +171,9 @@ Outpost.Miasma = (function () {
         },
         distance: function () {
             return distance;
+        },
+        get_danger: function() {
+            return danger;
         }
     };
 }());

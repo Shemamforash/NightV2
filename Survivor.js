@@ -41,11 +41,7 @@ Survivor.Pilgrim = {
 
 Survivor.get_empty_survivor = function () {
     //returns how much resource consumed
-    function consume(s, amount, debt_property, tolerance_property, required_property) {
-        if (s[debt_property] >= s[tolerance_property]) { //if they die no water consumed
-            Outpost.Survivors.kill_one(s);
-            return 0;
-        }
+    function consume(s, amount, debt_property, tolerance_property) {
         if(s[debt_property] >= amount){                 //if they have a greater debt than the water provided all water consumed
             s[debt_property] -= amount;
             return amount;
@@ -88,6 +84,11 @@ Survivor.get_empty_survivor = function () {
         actions: [],
         preferred: false,
 
+        check_alive: function() {
+            if (this.starvation >= this.starvation_tolerance || this.dehydration >= this.dehydration_tolerance) { //if they die no water consumed
+                Outpost.Survivors.kill_one(this);
+            }
+        },
         calculate_required_water: function () {
             var temperature = Environment.Current.get_temperature();
             if (temperature > this.preferred_temperature) {
@@ -115,6 +116,7 @@ Survivor.get_empty_survivor = function () {
             return (this.strength / this.starvation_tolerance) * (this.starvation_tolerance - this.starvation);
         },
         update_listener: function () {
+            this.check_alive();
             this.calculate_skill_modifier();
             this.calculate_required_food();
             this.calculate_required_water();
@@ -149,6 +151,35 @@ Survivor.get_empty_survivor = function () {
         },
         eat: function (amount) {
             return consume(this, amount, "starvation", "starvation_tolerance", "required_food");
+        },
+        get_health: function(type){
+            if(type === "Food") {
+                var percent_starved = (1 / this.starvation_tolerance) * this.starvation;
+                if(percent_starved < 0.4) {
+                    return "Feeling okay";
+                } else if (percent_starved < 0.7) {
+                    return "Quite hungry";
+                } else if (percent_starved < 0.9) {
+                    return "Starving";
+                } else if (percent_starved < 1) {
+                    return "Dying";
+                } else {
+                    return "Dead";
+                }
+            } else {
+                var percent_dehydrated = (1 / this.dehydration_tolerance) * this.dehydration;
+                if(percent_dehydrated < 0.4) {
+                    return "Feeling focused";
+                } else if (percent_dehydrated < 0.7) {
+                    return "A bit thirsty";
+                } else if (percent_dehydrated < 0.9) {
+                    return "Parched";
+                } else if (percent_dehydrated < 1) {
+                    return "Delirious";
+                } else {
+                    return "Dead";
+                }
+            }
         }
     }
 };
